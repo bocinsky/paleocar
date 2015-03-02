@@ -1,0 +1,16 @@
+# Load necessary packages
+# Additional packages are loaded in the *_FUNCTIONS.R scripts below
+pkgTest("care")
+pkgTest("dplR")
+pkgTest("cvTools")
+pkgTest("parallel")
+pkgTest("plyr")
+pkgTest("dplyr")
+pkgTest("xtable")
+pkgTest("spatial.tools")
+pkgTest("gdata")
+pkgTest("rgdal")
+pkgTest("ncdf4")
+pkgTest("raster")
+pkgTest("maps")
+pkgTest("abind")
