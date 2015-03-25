@@ -1,0 +1,10 @@
+Package: PaleoCAR
+Type: Package
+Title: Paleoclimate Reconstruction from Tree Rings using Correlation Adjusted corRelation 
+Version: 2.0
+Date: 2015-03-11
+Author: R. Kyle Bocinsky <bocinsky@gmail.com>
+Maintainer: R. Kyle Bocinsky <bocinsky@gmail.com>
+Description: Functions to perform spatio-temporal paleoclimate reconstruction from tree-rings using the CAR (Correlation Adjusted corRelation) approach of Zuber and Strimmer (2011). It is optimized for speed and memory use. This is the approach used in Bocinsky and Kohler (2014): Bocinsky, R. K. and Kohler, T. A. (2014). The primary difference is that here model selection is performed by minimizing the corrected Akaike's Information Criterion. See: A 2,000-year reconstruction of the rain-fed maize agricultural niche in the US Southwest. Nature Communications, 5:5618. doi: 10.1038/ncomms6618. 
+License: GPL-3
+Depends: FedData, care, forecast, zoo, parallel, data.table, matrixStats
