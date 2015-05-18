@@ -6,7 +6,8 @@ setwd("~/Dropbox/SKOPE/PaleoCARTest")
 # Load the functions for all analyses below
 # install.packages("devtools")
 # devtools::install_github("cran/wild1")
-# devtools::install_github("bocinsky/FedData")
+devtools::install_github("bocinsky/FedData")
+devtools::install_github("bocinsky/PaleoCAR")
 library(PaleoCAR)
 
 # Suppress use of scientific notation
@@ -69,44 +70,21 @@ ZuniCibola.100s <- paleoCAR.batch(predictands=ZuniCibola.annual.prcp.100s, label
 
 
 
-plot(ZuniCibola.full[['recon']][[1923]])
-plot(ZuniCibola.full[['errors']][[1923]])
-ZuniCibola.full.errorMeans <- (ZuniCibola.full[['errors']])/(ZuniCibola.full[['recon']])
-ZuniCibola.full.errorMeans[is.na(ZuniCibola.full.errorMeans)] <- 0
-ZuniCibola.full.errorMeans <- calc(ZuniCibola.full.errorMeans,function(x){x[is.na(x)] <- 0; return(x)})
+plot(ZuniCibola.10s[['recon']][[1923]])
+plot(ZuniCibola.10s[['errors']][[1923]])
+ZuniCibola.10s.errorMeans <- (ZuniCibola.10s[['errors']])/(ZuniCibola.10s[['recon']])
+ZuniCibola.10s.errorMeans[is.na(ZuniCibola.10s.errorMeans)] <- 0
+ZuniCibola.10s.errorMeans <- calc(ZuniCibola.10s.errorMeans,function(x){x[is.na(x)] <- 0; return(x)})
 
-plot(calc(ZuniCibola.full[['models']][['predictands']],mean))
-plot((ZuniCibola.full[['errors']][[1923]])/calc(ZuniCibola.full[['models']][['predictands']],mean))
-plot(abs((ZuniCibola.full[['errors']][[1923]])/(ZuniCibola.full[['recon']][[1923]])), zlim=c(0,0.1))
+plot(calc(ZuniCibola.10s[['models']][['predictands']],mean))
+plot((ZuniCibola.10s[['errors']][[1923]])/calc(ZuniCibola.10s[['models']][['predictands']],mean))
+plot(abs((ZuniCibola.10s[['errors']][[1923]])/(ZuniCibola.10s[['recon']][[1923]])), zlim=c(0,0.1))
 
-ZuniCibola.sd <- raster::calc(ZuniCibola[['recon']],sd)
-ZuniCibola.mean <- raster::calc(ZuniCibola[['recon']],mean)
-ZuniCibola.z <- raster::calc(ZuniCibola[['recon']],scale)
+ZuniCibola.10s.sd <- raster::calc(ZuniCibola.10s[['recon']],sd)
+ZuniCibola.10s.mean <- raster::calc(ZuniCibola.10s[['recon']],mean)
+ZuniCibola.10s.z <- raster::calc(ZuniCibola.10s[['recon']],scale)
 
-ZuniCibola.z <- calc(ZuniCibola.z,function(x){x[x>0] <- 1; return(x)})
-ZuniCibola.z <- calc(ZuniCibola.z,function(x){x[x<0] <- -1; return(x)})
+ZuniCibola.10s.z <- calc(ZuniCibola.10s.z,function(x){x[x>0] <- 1; return(x)})
+ZuniCibola.10s.z <- calc(ZuniCibola.10s.z,function(x){x[x<0] <- -1; return(x)})
 
-
-predictands=ZuniCibola.annual.prcp.10k
-label="ZuniCibola.annual.prcp.10k"
-chronologies=ITRDB.data
-calibration.years=calibration.years
-prediction.years=prediction.years
-out.dir="./OUTPUT/"
-meanVarMatch=T
-floor=0
-ceiling=NULL
-asInt=T
-force.redo=F
-verbose=F
-
-
-
-recon.rast <- brick("../OUTPUT_FINAL/ZuniCibola_PRISM_grow_prcp_ols_loocv_union_recons.tif")
-
-states <- readOGR("/Volumes/DATA/NATIONAL_ATLAS/statep010","statep010")
-states.4c <- states[states$STATE %in% c("Utah","Arizona","New Mexico","Colorado"),]
-prism.usa <- raster("/Volumes/DATA/PRISM/LT81_800M/ppt/1895/cai_ppt_us_us_30s_189501.bil")
-prism.4c <- crop(prism.usa,states.4c,snap='out')
-# prism.4c <- raster::mask(prism.4c,states.4c)
 
