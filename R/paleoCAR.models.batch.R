@@ -160,8 +160,14 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     
     new.t <- Sys.time()
     all.lms <- lapply(1:nrow(models),function(this.model){
-      #       cat("\nModel",this.model,"of",nrow(models))
+#             cat("\nModel",this.model,"of",nrow(models))
+
       cells <- unique(matches[.(this.model),cell])
+      if(!any(as.logical(models[this.model]))){
+        out <- data.table::data.table(cell=cells, model=this.model, CV=NA, AICc=NA, Intercept=NA)
+        data.table::setkey(out,cell,model)
+        return(out)
+      }
       model.mlm <- lm(predictand.matrix[,cells,drop=F]~predictor.matrix[,as.logical(models[this.model]),drop=F])
       
       # Get model errors
@@ -254,8 +260,11 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
       completed.cells[,AICc.change:=AICc.x-AICc.y]
       completed.cells <- completed.cells[,sum(CV.change)+sum(AICc.change),by=cell]$V1==0
       completed.cells[is.na(completed.cells)] <- F
+      completed.cells[allModels[is.na(CV),cell]] <- T
       if(verbose) cat("\nCalc completed:", Sys.time()-new.t)
-    }  
+    }else{
+      completed.cells[allModels[is.na(CV),cell]] <- T
+    }
     
     models.last.iter <- allModels[,1:5,with=F]
     
