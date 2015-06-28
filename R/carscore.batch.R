@@ -7,8 +7,15 @@
 #' @param predictor.matrix A matrix of predictors. Columns are predictors, number of rows must equal number of layers in \code{predictand.matrix}.
 #' @return A matrix of carscores.
 carscore.batch <- function(predictand.matrix, predictor.matrix){
-
-  carscores <- apply(predictand.matrix,2,carscore,Xtrain=predictor.matrix,verbose=F)
+  
+  carscores <- apply(predictand.matrix,2,function(predictands){
+    if(any(is.na(predictands)){
+      out <- predictor.matrix[1,]
+      out[] <- NA
+      return(out)
+    }
+    carscore(Ytrain=predictands,Xtrain=predictor.matrix,verbose=F)
+  })
   
   return(carscores)
 }
