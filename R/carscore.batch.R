@@ -9,12 +9,12 @@
 carscore.batch <- function(predictand.matrix, predictor.matrix){
   
   carscores <- apply(predictand.matrix,2,function(predictands){
-    if(any(is.na(predictands)){
+    if(any(is.na(predictands))){
       out <- predictor.matrix[1,]
       out[] <- NA
       return(out)
     }
-    carscore(Ytrain=predictands,Xtrain=predictor.matrix,verbose=F)
+    return(carscore(Ytrain=predictands,Xtrain=predictor.matrix,verbose=F))
   })
   
   return(carscores)
