@@ -71,13 +71,17 @@ predict.paleocar.models.batch <- function(models, meanVarMatch = TRUE, predictio
       calibration.coefficients <- as.matrix(calibration.coefficients)[rep(1:nrow(calibration.coefficients),each=nlayers(models[["predictands"]])),]
       
       calibration.predictions <- rowSums(calibration.coefficients*calibration.predictors, na.rm=T)
-      calibration.predictions <- do.call(cbind,split(calibration.predictions,rep(1:nrow(models[['models']][cell==this.cell]),each=length(calibration.years))))
+      calibration.predictions <- do.call(rbind,split(calibration.predictions,rep(1:nrow(models[['models']][cell==this.cell]),each=length(calibration.years))))
       
       calibration.predictands <- predictands[,this.cell]
       
-      scalar <- sd(calibration.predictands)/sd(calibration.predictions)
+      scalars <- sd(calibration.predictands)/rowSds(calibration.predictions)
+      transforms <- mean(calibration.predictands)-(scalars*rowMeans(calibration.predictions))
       
-      predictions.meanvar <- calibration.predictions*scalar + (mean(calibration.predictands)-(scalar*mean(calibration.predictions)))
+      scalars <- scalars[base::rep(1:nrow(models[['models']][cell==this.cell]),times=diff(c(models[['models']][cell==this.cell][['year']],tail(prediction.years,1)+1)))]
+      transforms <- transforms[base::rep(1:nrow(models[['models']][cell==this.cell]),times=diff(c(models[['models']][cell==this.cell][['year']],tail(prediction.years,1)+1)))]
+      
+      predictions.meanvar <- this.predictions*scalars + transforms
       return(this.predictions.scaled.meaned)
     }
     
