@@ -160,15 +160,15 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     
     new.t <- Sys.time()
     all.lms <- lapply(1:nrow(models),function(this.model){
-#             cat("\nModel",this.model,"of",nrow(models))
-
       cells <- unique(matches[.(this.model),cell])
       if(!any(as.logical(models[this.model]))){
         out <- data.table::data.table(cell=cells, model=this.model, CV=NA, AICc=NA, Intercept=NA)
         data.table::setkey(out,cell,model)
         return(out)
       }
-      model.mlm <- lm(predictand.matrix[,cells,drop=F]~predictor.matrix[,as.logical(models[this.model]),drop=F])
+      
+      predictand.names <- names(models[this.model])[which(as.logical(models[this.model]))]
+      model.mlm <- lm(predictand.matrix[,cells,drop=F]~predictor.matrix[,predictand.names,drop=F])
       
       # Get model errors
       model.errors <- data.table::data.table(CV.mlm(model.mlm))
@@ -178,14 +178,14 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
       
       # Get coefficients
       coefs <- data.table::data.table(t(as.matrix(model.mlm$coefficients)))
-      data.table::setnames(coefs,c("Intercept",colnames(predictor.matrix[,as.logical(models[this.model]),drop=F])))
+      data.table::setnames(coefs,c("Intercept",colnames(predictor.matrix[,predictand.names,drop=F])))
       coefs[,cell:=cells]
       #       coefs[,model:=this.model]
       data.table::setkey(coefs,cell)
       
       out <- model.errors[coefs]
       out[,model:=this.model]
-      data.table::setcolorder(out,c("cell","model","CV","AICc","Intercept",colnames(predictor.matrix[,as.logical(models[this.model]),drop=F])))
+      data.table::setcolorder(out,c("cell","model","CV","AICc","Intercept",colnames(predictor.matrix[,predictand.names,drop=F])))
       data.table::setkey(out,cell,model)
       
       return(out)
