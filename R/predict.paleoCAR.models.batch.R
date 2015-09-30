@@ -25,9 +25,10 @@
 #'
 #' @param models A PaleoCAR batch model, as returned from \code{\link{paleoCAR.models.batch}}.
 #' @param meanVarMatch Whether or not to perform mean-variance matching.
+#' @param chained.meanVar Logical, indicating whether to chain mean-variance matching if performed. See \code{\link{predict.paleocar.models.batch}}.
 #' @param prediction.years The set of years over which to generate reconstruction rasters. Optional.
 #' @return A RasterBrick containing the predictions for each year.
-predict.paleocar.models.batch <- function(models, meanVarMatch = TRUE, prediction.years=NULL){
+predict.paleocar.models.batch <- function(models, meanVarMatch = TRUE, chained.meanVar=FALSE, prediction.years=NULL){
   if(is.null(prediction.years)) prediction.years <- as.numeric(rownames(models[['reconstruction.matrix']]))
   
   if(!all(prediction.years %in% as.numeric(row.names(models[['reconstruction.matrix']])))){
@@ -36,144 +37,73 @@ predict.paleocar.models.batch <- function(models, meanVarMatch = TRUE, predictio
   }
   
   models[['reconstruction.matrix']] <- models[['reconstruction.matrix']][as.numeric(rownames(models[['reconstruction.matrix']])) %in% prediction.years,]
-  
-  # models[['models']][,endYear := c(year[-1]-1,2000),by=cell]
-  
+
   newx <- data.table(cbind(1,models[['reconstruction.matrix']]))
   setnames(newx,c("Intercept",colnames(models[['reconstruction.matrix']])))
   rownames(newx) <- prediction.years
+  newx.present <- !is.na(as.matrix(newx)[,-1])
   
-  predictands <- t(raster::as.matrix(models[["predictands"]]))
-#   predictands.mean <- colMeans(predictands)
-#   predictands.sd <- colSds(predictands)
-#   predictands <- data.table(cell=1:ncol(predictands),mean=predictands.mean,sd=predictands.sd)
-#   setkey(predictands,cell)
+  predictands.matrix <- t(raster::as.matrix(models[["predictands"]]))
   
-  newx.calib <- data.table(cbind(1,models[['predictor.matrix']]))
-  setnames(newx.calib,c("Intercept",colnames(models[['predictor.matrix']])))
+  newx.calib <- as.matrix(cbind(data.table(Intercept=1),models[['predictor.matrix']]))
   rownames(newx.calib) <- rownames(models[['predictor.matrix']])
-  newx.calib <- as.matrix(newx.calib)
   
-  predictions <- sapply(unique(models[['models']][['cell']]),function(this.cell){
-    coefficients <- models[['models']][cell==this.cell]
-    coefficients <- coefficients[base::rep(1:nrow(coefficients),times=diff(c(coefficients[['year']],tail(prediction.years,1)+1))),]
-    coefficients <- coefficients[,c("Intercept",colnames(models[['reconstruction.matrix']])),with=F]
-    this.predictions <- rowSums(coefficients*newx, na.rm=T)
+  
+  predictions <- lapply(unique(models[['models']][['cell']]),function(this.cell){
+    cat(this.cell,"\n")
+    this.models <- models[['models']][cell==this.cell][order(AICc)]
+    coefficients <- rbindlist(lapply(this.models$coefs,function(x){data.table(matrix(data=x,ncol=length(x),byrow=T,dimnames=list(NA,names(x))))}),fill=T)
+    # this.newx <- newx[,names(coefficients),with=F]
+    coefficients.present <- !is.na(as.matrix(coefficients)[,-1])
+    # newx.present <- !is.na(as.matrix(this.newx)[,-1])
     
-    if(meanVarMatch){
-      calibration.years <- as.numeric(gsub("X","",names(models[["predictands"]])))
+    model.rows <- apply(newx.present[,names(coefficients)[-1]], 1, function(x){
+      which(rowSums((coefficients.present - (matrix(x,ncol=length(x),byrow=T)[rep(1,nrow(coefficients.present)),])) > 0)==0)[1]
+    })
+    
+    this.predictions <- rowSums(coefficients[model.rows]*this.newx, na.rm=T)
+    
+    if(chained.meanVar){
       
-      calibration.coefficients <- models[['models']][cell==this.cell]
-      calibration.coefficients <- calibration.coefficients[,c("Intercept",colnames(models[['reconstruction.matrix']])),with=F]
+    }else if(meanVarMatch){
+      this.newx.calib <- newx.calib[,names(coefficients)]
+      calibration.years <- rownames(this.newx.calib)
       
-      calibration.predictors <- as.matrix(newx[calibration.years])[rep(1:length(calibration.years),nrow(calibration.coefficients)),]
+      calibration.coefficients <- coefficients[,colnames(this.newx.calib),with=F]
       
-      calibration.coefficients <- as.matrix(calibration.coefficients)[rep(1:nrow(calibration.coefficients),each=nlayers(models[["predictands"]])),]
+      calibration.predictors <- as.matrix(this.newx[as.numeric(calibration.years)])[rep(1:length(calibration.years),nrow(calibration.coefficients)),]
+      
+      calibration.coefficients <- as.matrix(calibration.coefficients)[rep(1:nrow(calibration.coefficients),each=length(calibration.years)),]
       
       calibration.predictions <- rowSums(calibration.coefficients*calibration.predictors, na.rm=T)
-      calibration.predictions <- do.call(rbind,split(calibration.predictions,rep(1:nrow(models[['models']][cell==this.cell]),each=length(calibration.years))))
+      calibration.predictions <- do.call(rbind,split(calibration.predictions,rep(1:nrow(coefficients),each=length(calibration.years))))
       
-      calibration.predictands <- predictands[,this.cell]
+      calibration.predictands <- predictands.matrix[,this.cell]
       
       scalars <- sd(calibration.predictands)/rowSds(calibration.predictions)
       transforms <- mean(calibration.predictands)-(scalars*rowMeans(calibration.predictions))
       
-      scalars <- scalars[base::rep(1:nrow(models[['models']][cell==this.cell]),times=diff(c(models[['models']][cell==this.cell][['year']],tail(prediction.years,1)+1)))]
-      transforms <- transforms[base::rep(1:nrow(models[['models']][cell==this.cell]),times=diff(c(models[['models']][cell==this.cell][['year']],tail(prediction.years,1)+1)))]
+      this.predictions <- (this.predictions*scalars[model.rows]) + transforms[model.rows]
       
-      predictions.meanvar <- this.predictions*scalars + transforms
-      return(this.predictions.scaled.meaned)
     }
     
-    return(this.predictions)
+    # Errors
+    errors <- (this.models$CV)[model.rows]
+    sizes <- (this.models$numPreds)[model.rows]
+    
+    return(list(predictions=this.predictions,errors=errors,sizes=sizes))
   })
-  colnames(predictions) <- unique(models[['models']][['cell']])
+  names(predictions) <- unique(models[['models']][['cell']])
   
-  
-
-  out <- rowSums(test*newx, na.rm=T)
-  plot(as.numeric(recon[1]))
-  points(out, col='red', pch=19)
-  points(y=predictands[,1],x=1924:1983,col='blue',pch=19)
-  
-  #   predictions <- sapply(prediction.years,function(this.year){
-  #     this.newx <- newx[this.year,]
-  #     coefficients <- models[['models']][year<=this.year & endYear>=this.year,c("Intercept",colnames(models[['reconstruction.matrix']])),with=F]    
-  #     return(rowSums(coefficients*this.newx[rep(1,nrow(coefficients))], na.rm=T))
-  #   })
-  #   colnames(predictions) <- prediction.years
-  
-#   if(meanVarMatch){
-#     predictands <- t(raster::as.matrix(models[["predictands"]]))
-#     predictands.mean <- colMeans(predictands)
-#     predictands.sd <- colSds(predictands)
-#     predictands <- data.table(cell=1:ncol(predictands),mean=predictands.mean,sd=predictands.sd)
-#     setkey(predictands,cell)
-#     
-#     newx.calib <- data.table(cbind(1,models[['predictor.matrix']]))
-#     setnames(newx.calib,c("Intercept",colnames(models[['predictor.matrix']])))
-#     rownames(newx.calib) <- rownames(models[['predictor.matrix']])
-#     newx.calib <- as.matrix(newx.calib)
-#     
-#     calibration.predictions <- cbind(models[['models']][,.(cell,year)],do.call(rbind,lapply(unique(models[['models']][['cell']]),function(this.cell){
-#       coefficients <- models[['models']][cell==this.cell]
-#       newx <- newx.calib[rep(1:nrow(newx.calib),nrow(coefficients)),]
-#       coefficients <- coefficients[base::rep(1:nrow(coefficients),each=nrow(newx.calib)),]
-#       coefficients <- as.matrix(coefficients[,c("Intercept",colnames(models[['reconstruction.matrix']])),with=F])
-#       out <- do.call(cbind,split(rowSums(coefficients*newx, na.rm=T),rep(1:nrow(newx.calib),each=nrow(models[['models']][cell==this.cell]))))
-#       out <- data.table(mean=rowMeans(out), sd=rowSds(out))
-#       
-#       return(out)
-#     })))
-#     
-#     #     # Mean and variance matching over calibration period    
-#     #     calibration.predictions <- lapply(1:nrow(newx.calib),function(this.row){
-#     #       this.newx <- newx.calib[this.row,]
-#     #       return(rowSums(coefficients*this.newx[rep(1,nrow(coefficients))], na.rm=T))
-#     #     })
-#     
-#     #     calibration.predictions <- do.call(cbind,calibration.predictions)
-#     #     calibration.predictions.mean <- rowMeans(calibration.predictions)
-#     #     calibration.predictions.sd <- rowSds(calibration.predictions)
-#     #     calibration.predictions <- models[['models']][,.(cell,year,endYear)]
-#     #     calibration.predictions[,mean:=calibration.predictions.mean]
-#     #     calibration.predictions[,sd:=calibration.predictions.sd]
-#     
-#     setkey(calibration.predictions,cell)
-#     all <- predictands[calibration.predictions]
-#     all[,scalar:=sd/i.sd]
-#     
-#     scalar.matrix <- sapply(unique(all[['cell']]),function(this.cell){
-#       
-#       coefficients <- models[['models']][cell==this.cell]
-#       coefficients <- coefficients[base::rep(1:nrow(coefficients),times=diff(c(coefficients[['year']],tail(prediction.years,1)+1))),]
-#       coefficients <- coefficients[,c("Intercept",colnames(models[['reconstruction.matrix']])),with=F]    
-#       return(rowSums(coefficients*newx, na.rm=T))
-#     })
-#     
-#     
-#     predictions <- sapply(colnames(predictions), function(this.cell){
-#       coefficients <- models[['models']][cell==this.cell]
-#       coefficients <- coefficients[base::rep(1:nrow(coefficients),times=diff(c(coefficients[['year']],tail(prediction.years,1)+1))),]
-#       coefficients <- coefficients[,c("Intercept",colnames(models[['reconstruction.matrix']])),with=F]    
-#       return(rowSums(coefficients*newx, na.rm=T))
-#     })
-#     
-#     predictions <- sapply(colnames(predictions), function(this.year){
-#       this.predictions <- predictions[,this.year]
-#       this.all <- all[year<=as.numeric(this.year) & endYear>=as.numeric(this.year)]
-#       this.scalar <- this.all[,scalar]
-#       this.predictions.scaled <- this.predictions*this.scalar
-#       this.predictand.mean <- this.all[,mean]
-#       this.calibration.predictions.mean <- this.all[,i.mean]
-#       this.predictions.scaled.meaned <- this.predictions.scaled + (this.predictand.mean-(this.scalar*this.calibration.predictions.mean))
-#       return(this.predictions.scaled.meaned)
-#     })
-#   }
+  errors <- sapply(predictions,'[[','errors')
+  sizes <- sapply(predictions,'[[','sizes')
+  predictions <- sapply(predictions,'[[','predictions')
   
   if(class(models[["predictands"]]) %in% c("RasterBrick","RasterStack")){
     predictions <- setValues(models[["predictands"]],t(predictions))
+    errors <- setValues(models[["predictands"]],t(errors))
+    sizes <- setValues(models[["predictands"]],t(sizes))
   }
+  return(list(predictions=predictions,errors=errors,sizes=sizes))
   
-  return(predictions)
 }

@@ -13,7 +13,9 @@
 #' If missing, defaults to the total years present in \code{chronologies}.
 #' @param label A character label for the reconstruction, for saving.
 #' @param out.dir The directory to which output is to be saved.
+#' @param min.width integer, indicating the minimum number of tree-ring samples allowed for that year of a chronology to be valid.
 #' @param meanVarMatch Logical, indicating whether to perform mean-variance matching on model results. See \code{\link{predict.paleocar.models.batch}}.
+#' @param chained.meanVar Logical, indicating whether to chain mean-variance matching if performed. See \code{\link{predict.paleocar.models.batch}}.
 #' @param floor Numeric, an optional lower bound for reconstructed values, such as \code{0} for precipitation reconstructions.
 #' @param ceiling Numeric, an optional upper bound for reconstructed values.
 #' @param asInt Logical, should reconstructed values be rounded to integers for saving?
@@ -26,51 +28,42 @@
 #'   \item{\code{errors}  The PaleoCAR reconstruction average LOOCV error, as computed by \code{\link{errors.paleocar.models.batch}}.}
 #'   \item{\code{sizes}  The PaleoCAR model sizes, as computed by \code{\link{size.paleocar.models.batch}}.}
 #' }
-paleoCAR.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, label, out.dir="./OUTPUT/", meanVarMatch=T, floor=NULL, ceiling=NULL, asInt=F, force.redo=F, verbose=F){
+paleoCAR.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, label, out.dir="./OUTPUT/", min.width=NULL, meanVarMatch=T, chained.meanVar=F, floor=NULL, ceiling=NULL, asInt=F, force.redo=F, verbose=F){
   t <- Sys.time()
   if(verbose) cat("\nCalculating all models")
-  models <- paleoCAR.models.batch(chronologies=chronologies, predictands=predictands, calibration.years=calibration.years, prediction.years=prediction.years, label=label, out.dir=out.dir, force.redo=force.redo, verbose=verbose)
+  models <- paleoCAR.models.batch(chronologies=chronologies, predictands=predictands, calibration.years=calibration.years, prediction.years=prediction.years, label=label, out.dir=out.dir, min.width=min.width, force.redo=force.redo, verbose=verbose)
   
   if(verbose) cat("\nGenerating reconstruction")
-  if(!force.redo & file.exists(paste(out.dir,label,".recon.tif",sep=''))){
-    recon <- brick(paste(out.dir,label,".recon.tif",sep=''))
+  if(!force.redo & file.exists(paste(out.dir,label,".recon.Rds",sep=''))){
+    recon <- readRDS(paste(out.dir,label,".recon.Rds",sep=''))
   }else{
-    recon <- predict.paleocar.models.batch(models=models, meanVarMatch=meanVarMatch, prediction.years=prediction.years)
+    recon <- predict.paleocar.models.batch(models=models, meanVarMatch=meanVarMatch, chained.meanVar=chained.meanVar, prediction.years=prediction.years)
+    
     if(!is.null(floor)){
-      recon <- calc(recon,function(x){x[x<floor] <- floor; return(x)})
+      recon$predictions <- calc(recon$predictions,function(x){x[x<floor] <- floor; return(x)})
     }
     if(!is.null(ceiling)){
-      recon <- calc(recon,function(x){x[x>ceiling] <- ceiling; return(x)})
+      recon$predictions <- calc(recon$predictions,function(x){x[x>ceiling] <- ceiling; return(x)})
     }
     if(asInt){
-      recon <- calc(recon,function(x){round(x,digits=0)})
+      recon$predictions <- calc(recon$predictions,function(x){round(x,digits=0)})
       type <- "INT2S"
     }else{type="FLT4S"}
-    writeRaster(recon,paste(out.dir,label,".recon.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
-  }
-  
-  if(verbose) cat("\nGenerating error brick")
-  if(!force.redo & file.exists(paste(out.dir,label,".errors.tif",sep=''))){
-    errors <- brick(paste(out.dir,label,".errors.tif",sep=''))
-  }else{
-    errors <- errors.paleocar.models.batch(models=models, prediction.years=prediction.years)
+    writeRaster(recon$predictions,paste(out.dir,label,".recon.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+    
     if(asInt){
-      errors <- calc(errors,function(x){round(x,digits=0)})
+      recon$errors <- calc(recon$errors,function(x){round(x,digits=0)})
       type="INT2U"
     }else{type="FLT4S"}
-    writeRaster(errors,paste(out.dir,label,".errors.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
-  }
-  
-  if(verbose) cat("\nGenerating model size brick")
-  if(!force.redo & file.exists(paste(out.dir,label,".size.tif",sep=''))){
-    sizes <- brick(paste(out.dir,label,".size.tif",sep=''))
-  }else{
-    sizes <- size.paleocar.models.batch(models=models, prediction.years=prediction.years)
-    writeRaster(sizes,paste(out.dir,label,".size.tif",sep=''), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+    writeRaster(recon$errors,paste(out.dir,label,".errors.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+    
+    writeRaster(recon$sizes,paste(out.dir,label,".size.tif",sep=''), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+    
+    saveRDS(recon,paste(out.dir,label,".recon.Rds",sep=''),compress='xz')
   }
   
   if(verbose) cat("\nThe entire reconstruction took", format(Sys.time()-t))
   
-  return(list(models=models,recon=recon,errors=errors,sizes=sizes))
+  return(list(models=models,recon=recon$predictions,errors=recon$errors,sizes=recon$sizes))
 }
 
