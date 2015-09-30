@@ -257,6 +257,49 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     setkey(allModels,cell,year)
     setorder(allModels,cell,year,AICc)
     allModels <- allModels[allModels[,!duplicated(year),by=cell]$V1,]
+
+    get.coef.names <- function(year,model,coefs,numPreds,CV,AICc){
+      coefs <- allModels[order(AICc)][cell==1,coefs]
+      
+      the.coefs <- lapply(coefs,function(x){names(x)[-1]})
+      # test.out <- apply(as.matrix(test.predlist),1,function(x){which(sapply(the.coefs,function(y){all(names(x)[x] %in% y)}))[1]})
+      test.out <- lapply(the.coefs,function(x){which(rowSums(test.predlist[,x,with=F])==length(x))})
+      test.out <- lapply(1:length(test.out),function(i){data.table(model=i,year=test.out[[i]])})
+      test.out <- rbindlist(test.out)
+      test.out <- test.out[which(!duplicated(test.out[,year])),model]
+      # test.out <- test.out[order(year)]
+      return(list(year=sort(year),model=model[test.out],numPreds=numPreds[test.out],CV=CV[test.out],AICc=AICc[test.out],coefs=coefs[test.out]))
+    }
+    
+    test.allModels <- allModels[order(AICc)][,get.coef.names(year,model,coefs,numPreds,CV,AICc),by=cell]
+    setkey(test.allModels,cell,year)
+    setorder(test.allModels,cell,year,AICc)
+
+#     all(test.predlist[,test[,coefs],with=F])
+#     
+#     
+#     test <- function(){
+#       this.models <- models[['models']][cell==this.cell][order(AICc)]
+#       coefficients <- rbindlist(lapply(this.models$coefs,function(x){data.table(matrix(data=x,ncol=length(x),byrow=T,dimnames=list(NA,names(x))))}),fill=T)
+#       # this.newx <- newx[,names(coefficients),with=F]
+#       coefficients.present <- !is.na(as.matrix(coefficients)[,-1])
+#       # newx.present <- !is.na(as.matrix(this.newx)[,-1])
+#       
+#       model.rows <- apply(newx.present[,names(coefficients)[-1]], 1, function(x){
+#         which(rowSums((coefficients.present - (matrix(x,ncol=length(x),byrow=T)[rep(1,nrow(coefficients.present)),])) > 0)==0)[1]
+#       })
+#     }
+#     
+#     allModels[order(AICc)][,.(year,coefs),by=cell]
+#     
+#     allModels[order(AICc),get.coef.names(coefs),by=cell]
+#     
+#     
+#     
+    
+    
+    
+    
     
     complete.cell.years <- allModels[model==0,.(cell,year,model)]
     
