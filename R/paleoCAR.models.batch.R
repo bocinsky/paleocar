@@ -30,11 +30,13 @@
 #'   \item{\code{reconstruction.matrix}  A matrix of predictors for reconstruction; \code{chronologies} cropped to \code{prediction.years}, or all of \code{chronologies} if \code{prediction.years==NULL}.}
 #' }
 paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, min.width=NULL, label, out.dir="./OUTPUT/", force.redo=F, verbose=F){
+  if(verbose) cat("Calculating PaleoCAR models\n")
   if(!force.redo & file.exists(paste(out.dir,label,'.models.rds',sep=''))){
     allModels <- readRDS(paste(out.dir,label,'.models.rds',sep=''))
     return(allModels)
   }
   
+  t <- Sys.time()
   predictor.matrix <- getPredictorMatrix(chronologies=chronologies, calibration.years=calibration.years, min.width=min.width)
   
   maxPreds <- nrow(predictor.matrix)-5
@@ -66,6 +68,8 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     carscores <- data.table::data.table(t(carscores))
     saveRDS(carscores, paste(out.dir,label,".carscores.Rds",sep=''), compress='xz')
   }
+  
+  if(verbose) cat("\nPrepare data and calculate CAR scores:", round(difftime(Sys.time(),t,units='mins'),digits=2),"minutes\n")
   
   allModels <- data.table(cell=numeric(),year=numeric(),model=numeric(),numPreds=numeric(),CV=numeric(),AICc=numeric(),coefs=numeric())
   complete.cell.years <- data.table(cell=numeric(),year=numeric())
@@ -160,7 +164,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     
     setkey(matches,model)
     
-    if(verbose) cat("\nDefine models:", Sys.time()-new.t)
+    if(verbose) cat("\nDefine models:", round(difftime(Sys.time(),new.t,units='mins'),digits=2),"minutes")
     
     new.t <- Sys.time()
     all.lms <- lapply(1:nrow(models),function(this.model){
@@ -202,7 +206,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
       return(model.errors)
     })
     all.lms <- all.lms[!sapply(all.lms,is.null)]
-    if(verbose) cat("\nCalc lms:", Sys.time()-new.t, "number of models:",length(all.lms))
+    if(verbose) cat("\nCalculate",length(all.lms),"linear models:", round(difftime(Sys.time(),new.t,units='mins'),digits=2),"minutes")
     rm(models); gc(); gc()
     
     ## LMS SIMPLIFY PREP
@@ -257,75 +261,50 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     setkey(allModels,cell,year)
     setorder(allModels,cell,year,AICc)
     allModels <- allModels[allModels[,!duplicated(year),by=cell]$V1,]
-
-    get.coef.names <- function(year,model,coefs,numPreds,CV,AICc){
-      coefs <- allModels[order(AICc)][cell==1,coefs]
-      
-      the.coefs <- lapply(coefs,function(x){names(x)[-1]})
-      # test.out <- apply(as.matrix(test.predlist),1,function(x){which(sapply(the.coefs,function(y){all(names(x)[x] %in% y)}))[1]})
-      test.out <- lapply(the.coefs,function(x){which(rowSums(test.predlist[,x,with=F])==length(x))})
-      test.out <- lapply(1:length(test.out),function(i){data.table(model=i,year=test.out[[i]])})
-      test.out <- rbindlist(test.out)
-      test.out <- test.out[which(!duplicated(test.out[,year])),model]
-      # test.out <- test.out[order(year)]
-      return(list(year=sort(year),model=model[test.out],numPreds=numPreds[test.out],CV=CV[test.out],AICc=AICc[test.out],coefs=coefs[test.out]))
-    }
-    
-    test.allModels <- allModels[order(AICc)][,get.coef.names(year,model,coefs,numPreds,CV,AICc),by=cell]
-    setkey(test.allModels,cell,year)
-    setorder(test.allModels,cell,year,AICc)
-
-#     all(test.predlist[,test[,coefs],with=F])
-#     
-#     
-#     test <- function(){
-#       this.models <- models[['models']][cell==this.cell][order(AICc)]
-#       coefficients <- rbindlist(lapply(this.models$coefs,function(x){data.table(matrix(data=x,ncol=length(x),byrow=T,dimnames=list(NA,names(x))))}),fill=T)
-#       # this.newx <- newx[,names(coefficients),with=F]
-#       coefficients.present <- !is.na(as.matrix(coefficients)[,-1])
-#       # newx.present <- !is.na(as.matrix(this.newx)[,-1])
-#       
-#       model.rows <- apply(newx.present[,names(coefficients)[-1]], 1, function(x){
-#         which(rowSums((coefficients.present - (matrix(x,ncol=length(x),byrow=T)[rep(1,nrow(coefficients.present)),])) > 0)==0)[1]
-#       })
-#     }
-#     
-#     allModels[order(AICc)][,.(year,coefs),by=cell]
-#     
-#     allModels[order(AICc),get.coef.names(coefs),by=cell]
-#     
-#     
-#     
-    
-    
-    
-    
     
     complete.cell.years <- allModels[model==0,.(cell,year,model)]
     
     allModels[,model:=0]
-    
-    # allModels[,cell:=as.numeric(cell)]
+
     setkey(allModels,cell,year,numPreds)
     
-    if(verbose) cat("\nClean lms:", Sys.time()-new.t)
+    if(verbose) cat("\nClean linear models:", round(difftime(Sys.time(),new.t,units='mins'),digits=2),"minutes")
     
-    time <- Sys.time()-t
-    if(verbose) cat("\nTime:",time,"\n")
+    time <- difftime(Sys.time(),t,units='mins')
+    if(verbose) cat("\nTotal modeling time:",round(time,digits=2),"minutes\n")
     times[i] <- time
     if((nrow(allModels)-nrow(complete.cell.years))==0) break
-    if(verbose) cat(nrow(allModels)-nrow(complete.cell.years),"cell-years remaining.\n")
+    if(verbose) cat(nrow(allModels)-nrow(complete.cell.years),"cell-years remaining\n")
     ## 
     
   }
   
+  if(verbose) cat("\nTotal Modeling Time:",sum(times),"minutes\n")
   
+  t <- Sys.time()
+  get.coef.names <- function(year,model,coefs,numPreds,CV,AICc){
+    # coefs <- allModels[order(AICc)][cell==1,coefs]
+    
+    the.coefs <- lapply(coefs,function(x){names(x)[-1]})
+    # test.out <- apply(as.matrix(test.predlist),1,function(x){which(sapply(the.coefs,function(y){all(names(x)[x] %in% y)}))[1]})
+    test.out <- lapply(the.coefs,function(x){which(rowSums(predlist[,x,drop=F])==length(x))})
+    test.out <- lapply(1:length(test.out),function(i){data.table(model=i,year=test.out[[i]])})
+    test.out <- rbindlist(test.out)
+    test.out <- test.out[which(!duplicated(test.out[,year]))]
+    setkey(test.out,year)
+    # test.out <- test.out[order(year)]
+    return(list(year=sort(year),model=model[test.out$model],numPreds=numPreds[test.out$model],CV=CV[test.out$model],AICc=AICc[test.out$model],coefs=coefs[test.out$model]))
+  }
+  
+  allModels <- allModels[order(AICc)][,get.coef.names(year,model,coefs,numPreds,CV,AICc),by=cell]
+  setkey(allModels,cell,year)
+  setorder(allModels,cell,year,AICc)
+  time <- difftime(Sys.time(),t,units='mins')
+  if(verbose) cat("\nOptimizing models:",round(time,digits=2),"minutes\n")
   
   allModels <- list(models=allModels, predictands=predictands, predictor.matrix=predictor.matrix, reconstruction.matrix=reconstruction.matrix)
   
   saveRDS(allModels,file=paste(out.dir,label,'.models.rds',sep=''), compress='xz')
-  
-  if(verbose) cat("\nTotal Modeling Time:",sum(times),"\n")
-  
+
   return(allModels)
 }

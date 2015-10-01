@@ -62,7 +62,7 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
     saveRDS(recon,paste(out.dir,label,".recon.Rds",sep=''),compress='xz')
   }
   
-  if(verbose) cat("\nThe entire reconstruction took", format(Sys.time()-t))
+  if(verbose) cat("\nThe entire reconstruction took", difftime(Sys.time(),t,units='mins'),"minutes")
   
   return(list(models=models,recon=recon$predictions,errors=recon$errors,sizes=recon$sizes))
 }

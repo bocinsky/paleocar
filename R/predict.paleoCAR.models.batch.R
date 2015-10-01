@@ -51,19 +51,18 @@ predict.paleocar.models.batch <- function(models, meanVarMatch = TRUE, chained.m
   
   predictions <- lapply(unique(models[['models']][['cell']]),function(this.cell){
     cat(this.cell,"\n")
-    this.models <- models[['models']][cell==this.cell][order(AICc)]
+    this.models <- models[['models']][cell==this.cell & year %in% prediction.years]
     coefficients <- rbindlist(lapply(this.models$coefs,function(x){data.table(matrix(data=x,ncol=length(x),byrow=T,dimnames=list(NA,names(x))))}),fill=T)
-    # this.newx <- newx[,names(coefficients),with=F]
-    coefficients.present <- !is.na(as.matrix(coefficients)[,-1])
-    # newx.present <- !is.na(as.matrix(this.newx)[,-1])
+    this.newx <- newx[,names(coefficients),with=F]
     
-    model.rows <- apply(newx.present[,names(coefficients)[-1]], 1, function(x){
-      which(rowSums((coefficients.present - (matrix(x,ncol=length(x),byrow=T)[rep(1,nrow(coefficients.present)),])) > 0)==0)[1]
-    })
+    model.rows <- rep(1:nrow(coefficients),times=diff(c(this.models$year,tail(prediction.years,1)+1)))
     
     this.predictions <- rowSums(coefficients[model.rows]*this.newx, na.rm=T)
     
     if(chained.meanVar){
+      coefficients.available <- newx.present[,names(coefficients),with=F]
+      match.periods <- 
+      
       
     }else if(meanVarMatch){
       this.newx.calib <- newx.calib[,names(coefficients)]
