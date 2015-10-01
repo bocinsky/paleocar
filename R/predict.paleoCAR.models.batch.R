@@ -37,7 +37,7 @@ predict.paleocar.models.batch <- function(models, meanVarMatch = TRUE, chained.m
   }
   
   models[['reconstruction.matrix']] <- models[['reconstruction.matrix']][as.numeric(rownames(models[['reconstruction.matrix']])) %in% prediction.years,]
-
+  
   newx <- data.table(cbind(1,models[['reconstruction.matrix']]))
   setnames(newx,c("Intercept",colnames(models[['reconstruction.matrix']])))
   rownames(newx) <- prediction.years
@@ -47,11 +47,13 @@ predict.paleocar.models.batch <- function(models, meanVarMatch = TRUE, chained.m
   
   newx.calib <- as.matrix(cbind(data.table(Intercept=1),models[['predictor.matrix']]))
   rownames(newx.calib) <- rownames(models[['predictor.matrix']])
-  
+  calib.years <- as.numeric(row.names(newx.calib))
   
   predictions <- lapply(unique(models[['models']][['cell']]),function(this.cell){
     cat(this.cell,"\n")
     this.models <- models[['models']][cell==this.cell & year %in% prediction.years]
+    this.models[,end.year:=c(year[-1]-1,tail(year,1))]
+    
     coefficients <- rbindlist(lapply(this.models$coefs,function(x){data.table(matrix(data=x,ncol=length(x),byrow=T,dimnames=list(NA,names(x))))}),fill=T)
     this.newx <- newx[,names(coefficients),with=F]
     
@@ -60,9 +62,64 @@ predict.paleocar.models.batch <- function(models, meanVarMatch = TRUE, chained.m
     this.predictions <- rowSums(coefficients[model.rows]*this.newx, na.rm=T)
     
     if(chained.meanVar){
-      coefficients.available <- newx.present[,names(coefficients),with=F]
-      match.periods <- 
       
+      spans <- lapply(1:length(this.models$year),function(i){this.models$year[i]:(c(this.models$year,tail(this.models$year,1)+1)[i+1]-1)})
+      pivot <- which(sapply(spans,function(span){all(calib.years %in% span)}))
+      
+      
+      
+      available.below <- apply(this.models[1:(pivot-1),.(end.year,coefs)],1,function(d){
+        out <- which(rowSums(!is.na(newx[,names(d$coefs),with=F]))==length(names(d$coefs)))
+        out <- out[out>d[1]]
+        out.rle <- rle(diff(out))
+        out.rle.start <- which(cumsum(out.rle$lengths)==cumsum(out.rle$lengths)[head(which(out.rle$lengths>=length(calib.years) & out.rle$values==1),1)])
+        out <- out[out.rle.start:(out.rle.start+length(calib.years)-1)]
+        return(out)
+      })
+      
+      available.above <- apply(this.models[(pivot+1):nrow(this.models),.(year,coefs)],1,function(d){
+        out <- which(rowSums(!is.na(newx[,names(d$coefs),with=F]))==length(names(d$coefs)))
+        out <- out[out<d[1]]
+        out.rle <- rle(diff(out))
+        out.rle.end <- which(cumsum(out.rle$lengths)==cumsum(out.rle$lengths)[tail(which(out.rle$lengths>=length(calib.years) & out.rle$values==1),1)])
+        out <- rev(rev(out)[out.rle.end:(out.rle.end+length(calib.years)-1)])
+        return(out)
+      })
+      
+      match.periods <- do.call(cbind,list(available.below,as.matrix(calib.years),available.above))
+      
+      match.newx <- apply(match.periods,2,function(x){
+        this.newx[x]
+      })
+      
+      match.predictions <- matrix(rowSums(coefficients[rep(1:nrow(coefficients),each=length(calib.years))]*this.newx[as.vector(match.periods)], na.rm=T),nrow=length(calib.years))
+      
+      scale.center <- mean_var_match(calib.vector=predictands.matrix[,this.cell],out.calib.vector=match.predictions[,pivot], out.vector=this.predictions[spans[[pivot]]])
+      names(scale.center) <- spans[[pivot]]
+      
+      for(i in (pivot-1):1){
+        new.names <- c(as.character(spans[[i]]),names(scale.center))
+        scale.center <- c(mean_var_match(calib.vector=scale.center[as.character(match.periods[,i])],out.calib.vector=match.predictions[,i], out.vector=this.predictions[spans[[i]]]),scale.center)
+        names(scale.center) <- new.names
+      }
+      
+      for(i in (pivot+1):length(spans)){
+        new.names <- c(names(scale.center),as.character(spans[[i]]))
+        scale.center <- c(scale.center,mean_var_match(calib.vector=scale.center[as.character(match.periods[,i])],out.calib.vector=match.predictions[,i], out.vector=this.predictions[spans[[i]]]))
+        names(scale.center) <- new.names
+      }
+      
+      this.predictions <- scale.center
+      
+      
+      
+      
+      #       plot(y=scale.center,x=spans[[pivot]], type='l')
+      #       lines(y=predictands.matrix[,this.cell],x=calib.years, col='red')
+      #       lines(y=this.predictions[match.periods[,pivot]],x=match.periods[,pivot], col='dodgerblue')
+      #       
+      #       plot(y=scale.center[which(spans[[pivot]] %in% calib.years)],x=calib.years,type='l')
+      #       lines(y=predictands.matrix[,this.cell],x=calib.years, col='red')
       
     }else if(meanVarMatch){
       this.newx.calib <- newx.calib[,names(coefficients)]

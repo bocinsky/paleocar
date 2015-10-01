@@ -177,7 +177,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
       # Get model errors
       model.errors <- data.table::data.table(CV.mlm(model.mlm))
       model.errors[,cell:=cells]
-      #       model.errors[,model:=this.model]
+
       data.table::setkey(model.errors,cell)
       
       # Get coefficients
@@ -190,10 +190,9 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
         return(out)
       })
       names(coefs) <- cells
-      # coefs[,cell:=cells]
+
       coefs <- coefs[order(as.integer(names(coefs)))]
-      #       coefs[,model:=this.model]
-      # data.table::setkey(coefs,cell)
+
       if(length(coefs)==1){
         model.errors[,coefs:=list(coefs)]
       }else{
@@ -283,22 +282,20 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   
   t <- Sys.time()
   get.coef.names <- function(year,model,coefs,numPreds,CV,AICc){
-    # coefs <- allModels[order(AICc)][cell==1,coefs]
-    
     the.coefs <- lapply(coefs,function(x){names(x)[-1]})
-    # test.out <- apply(as.matrix(test.predlist),1,function(x){which(sapply(the.coefs,function(y){all(names(x)[x] %in% y)}))[1]})
     test.out <- lapply(the.coefs,function(x){which(rowSums(predlist[,x,drop=F])==length(x))})
     test.out <- lapply(1:length(test.out),function(i){data.table(model=i,year=test.out[[i]])})
     test.out <- rbindlist(test.out)
     test.out <- test.out[which(!duplicated(test.out[,year]))]
     setkey(test.out,year)
-    # test.out <- test.out[order(year)]
     return(list(year=sort(year),model=model[test.out$model],numPreds=numPreds[test.out$model],CV=CV[test.out$model],AICc=AICc[test.out$model],coefs=coefs[test.out$model]))
   }
   
   allModels <- allModels[order(AICc)][,get.coef.names(year,model,coefs,numPreds,CV,AICc),by=cell]
   setkey(allModels,cell,year)
-  setorder(allModels,cell,year,AICc)
+  
+  allModels <- allModels[allModels[,!FedData::sequential_duplicated(.SD, rows=T),by=cell,.SDcols=c("numPreds","CV","AICc")]$V1,]
+  
   time <- difftime(Sys.time(),t,units='mins')
   if(verbose) cat("\nOptimizing models:",round(time,digits=2),"minutes\n")
   
