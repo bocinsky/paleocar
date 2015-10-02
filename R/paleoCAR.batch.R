@@ -14,7 +14,7 @@
 #' @param label A character label for the reconstruction, for saving.
 #' @param out.dir The directory to which output is to be saved.
 #' @param min.width integer, indicating the minimum number of tree-ring samples allowed for that year of a chronology to be valid.
-#' @param meanVarMatch Logical, indicating whether to perform mean-variance matching on model results. See \code{\link{predict.paleocar.models.batch}}.
+#' @param meanVar A character string indicating the type of mean-variance matching to perform: either "none" (default), "calibration", or "chained".
 #' @param chained.meanVar Logical, indicating whether to chain mean-variance matching if performed. See \code{\link{predict.paleocar.models.batch}}.
 #' @param floor Numeric, an optional lower bound for reconstructed values, such as \code{0} for precipitation reconstructions.
 #' @param ceiling Numeric, an optional upper bound for reconstructed values.
@@ -28,7 +28,7 @@
 #'   \item{\code{errors}  The PaleoCAR reconstruction average LOOCV error, as computed by \code{\link{errors.paleocar.models.batch}}.}
 #'   \item{\code{sizes}  The PaleoCAR model sizes, as computed by \code{\link{size.paleocar.models.batch}}.}
 #' }
-paleoCAR.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, label, out.dir="./OUTPUT/", min.width=NULL, meanVarMatch=T, chained.meanVar=F, floor=NULL, ceiling=NULL, asInt=F, force.redo=F, verbose=F){
+paleoCAR.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, label, out.dir="./OUTPUT/", min.width=NULL, meanVar = "none", floor=NULL, ceiling=NULL, asInt=F, force.redo=F, verbose=F){
   t <- Sys.time()
   if(verbose) cat("\nCalculating all models")
   models <- paleoCAR.models.batch(chronologies=chronologies, predictands=predictands, calibration.years=calibration.years, prediction.years=prediction.years, label=label, out.dir=out.dir, min.width=min.width, force.redo=force.redo, verbose=verbose)
@@ -37,7 +37,7 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
   if(!force.redo & file.exists(paste(out.dir,label,".recon.Rds",sep=''))){
     recon <- readRDS(paste(out.dir,label,".recon.Rds",sep=''))
   }else{
-    recon <- predict.paleocar.models.batch(models=models, meanVarMatch=meanVarMatch, chained.meanVar=chained.meanVar, prediction.years=prediction.years)
+    recon <- predict.paleocar.models.batch(models=models, meanVar=meanVar, prediction.years=prediction.years)
     
     if(!is.null(floor)){
       recon$predictions <- calc(recon$predictions,function(x){x[x<floor] <- floor; return(x)})

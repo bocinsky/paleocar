@@ -3,7 +3,7 @@
 #' This is the primary function for fitting PaleoCAR models to a large set of predictands using
 #' a uniform set of predictors (tree-ring chronologies). For each predictand, \code{\link{carscore}s} are calculated for 
 #' each predictor, and models are calculated by adding predictors stepwise to an ordinary least-squares
-#' linear model using the \code{\link{lm}} function. Model selection is performed by minizing corrected AIC.
+#' linear model using the \code{\link{lm}} function. Model selection is performed by minimizing corrected AIC.
 #' This occurs for every unique set of available predictors through time.
 #' 
 #' See \code{\link{paleoCAR.models}} for a simplified algorithm that fits a PaleoCAR model for 
