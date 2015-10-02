@@ -30,7 +30,7 @@
 #'   \item{\code{reconstruction.matrix}  A matrix of predictors for reconstruction; \code{chronologies} cropped to \code{prediction.years}, or all of \code{chronologies} if \code{prediction.years==NULL}.}
 #' }
 paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, min.width=NULL, label, out.dir="./OUTPUT/", force.redo=F, verbose=F){
-  if(verbose) cat("Calculating PaleoCAR models\n")
+  # if(verbose) cat("Calculating PaleoCAR models\n")
   if(!force.redo & file.exists(paste(out.dir,label,'.models.rds',sep=''))){
     allModels <- readRDS(paste(out.dir,label,'.models.rds',sep=''))
     return(allModels)
@@ -83,11 +83,13 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     preds <- predlist[prednums>=i,]
     
     ## MATCHES 1
-    matches <- lapply(rownames(preds),function(year){
-      pred.names <- colnames(preds)[preds[year,]]
-      models <- data.table::data.table(matrixStats::rowRanks(as.matrix(carscores[,pred.names,with = F]))<=i)
+    matches <- lapply(rownames(preds),function(this.year){
+      complete.cells <- complete.cell.years[year==as.numeric(this.year), cell]
+      pred.names <- colnames(preds)[preds[this.year,]]
+      if(all((rownames(carscores) %in% complete.cells))) return(NULL)
+      models <- data.table::data.table(matrixStats::rowRanks(as.matrix(carscores[!(rownames(carscores) %in% complete.cells),pred.names,with = F]))<=i)
       data.table::setnames(models,pred.names)
-      models[,cell:=1:nrow(models)]
+      models[,cell:=as.numeric(rownames(carscores)[!(rownames(carscores) %in% complete.cells)])]
       # models <- models[cell %in% which(!completed.cells)]
       data.table::setorderv(models,pred.names,rep(-1,length(pred.names)))
       models.duplicates <- !duplicated(models,by=pred.names)
@@ -106,10 +108,13 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     })
     gc();gc()
     
+    match.names <- rownames(preds)[!sapply(matches,is.null)]
+    matches <- matches[!sapply(matches,is.null)]
+    
     models <- lapply(matches,'[[','models')
     matches <- lapply(matches,'[[','matches')
-    names(matches) <- rownames(preds)
-    names(models) <- rownames(preds)
+    names(matches) <- match.names
+    names(models) <- match.names
     
     nummodels <- c(0,cumsum(sapply(models,nrow)))[0-(length(models)+1)]
     names(nummodels) <- names(models)

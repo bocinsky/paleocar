@@ -66,8 +66,6 @@ predict.paleocar.models.batch <- function(models, meanVarMatch = TRUE, chained.m
       spans <- lapply(1:length(this.models$year),function(i){this.models$year[i]:(c(this.models$year,tail(this.models$year,1)+1)[i+1]-1)})
       pivot <- which(sapply(spans,function(span){all(calib.years %in% span)}))
       
-      
-      
       available.below <- apply(this.models[1:(pivot-1),.(end.year,coefs)],1,function(d){
         out <- which(rowSums(!is.na(newx[,names(d$coefs),with=F]))==length(names(d$coefs)))
         out <- out[out>d[1]]
