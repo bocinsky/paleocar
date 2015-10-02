@@ -289,8 +289,9 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   get.coef.names <- function(year,model,coefs,numPreds,CV,AICc){
     the.coefs <- lapply(coefs,function(x){names(x)[-1]})
     test.out <- lapply(the.coefs,function(x){which(rowSums(predlist[,x,drop=F])==length(x))})
-    test.out <- lapply(1:length(test.out),function(i){data.table(model=i,year=test.out[[i]])})
-    test.out <- rbindlist(test.out)
+    test.out <- data.table(model=rep(1:length(test.out),times=sapply(test.out,length)), year=unlist(test.out))
+    # test.out <- lapply(1:length(test.out),function(i){data.table(model=i,year=test.out[[i]])})
+    # test.out <- rbindlist(test.out)
     test.out <- test.out[which(!duplicated(test.out[,year]))]
     setkey(test.out,year)
     return(list(year=sort(year),model=model[test.out$model],numPreds=numPreds[test.out$model],CV=CV[test.out$model],AICc=AICc[test.out$model],coefs=coefs[test.out$model]))
@@ -299,7 +300,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   allModels <- allModels[order(AICc)][,get.coef.names(year,model,coefs,numPreds,CV,AICc),by=cell]
   setkey(allModels,cell,year)
   
-  allModels <- allModels[allModels[,!FedData::sequential_duplicated(.SD, rows=T),by=cell,.SDcols=c("numPreds","CV","AICc")]$V1,]
+  allModels <- allModels[allModels[,!FedData::sequential_duplicated(CV),by=cell]$V1,]
   
   time <- difftime(Sys.time(),t,units='mins')
   if(verbose) cat("\nOptimizing models:",round(time,digits=2),"minutes\n")
