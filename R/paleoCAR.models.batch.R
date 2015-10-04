@@ -45,7 +45,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   
   if(class(predictands) %in% c("RasterBrick","RasterStack")){
     predictand.matrix <- t(raster::values(predictands))
-    colnames(predictand.matrix) <- as.character(1:ncell(predictands)) 
+    colnames(predictand.matrix) <- as.character(1:raster::ncell(predictands)) 
   }
   
   reconstruction.matrix <- getReconstructionMatrix(chronologies=chronologies, reconstruction.years=prediction.years, min.width=min.width)
