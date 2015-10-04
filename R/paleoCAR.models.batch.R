@@ -39,7 +39,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   t <- Sys.time()
   predictor.matrix <- getPredictorMatrix(chronologies=chronologies, calibration.years=calibration.years, min.width=min.width)
   
-  null.cells <- which(is.na(getValues(predictands[[1]])))
+  null.cells <- which(is.na(raster::getValues(predictands[[1]])))
   
   maxPreds <- nrow(predictor.matrix)-5
   
