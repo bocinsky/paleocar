@@ -39,6 +39,8 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   t <- Sys.time()
   predictor.matrix <- getPredictorMatrix(chronologies=chronologies, calibration.years=calibration.years, min.width=min.width)
   
+  null.cells <- which(is.na(getValues(predictands[[1]])))
+  
   maxPreds <- nrow(predictor.matrix)-5
   
   if(class(predictands) %in% c("RasterBrick","RasterStack")){
@@ -84,7 +86,9 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     
     ## MATCHES 1
     matches <- lapply(rownames(preds),function(this.year){
-      complete.cells <- complete.cell.years[year==as.numeric(this.year), cell]
+      # cat(this.year,'\n')
+      complete.cells <- c(complete.cell.years[year==as.numeric(this.year), cell],null.cells)
+      
       pred.names <- colnames(preds)[preds[this.year,]]
       if(all((rownames(carscores) %in% complete.cells))) return(NULL)
       models <- data.table::data.table(matrixStats::rowRanks(as.matrix(carscores[!(rownames(carscores) %in% complete.cells),pred.names,with = F]))<=i)
