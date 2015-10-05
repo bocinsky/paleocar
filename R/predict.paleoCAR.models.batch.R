@@ -53,7 +53,7 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
     this.models <- models[['models']][cell==this.cell & year %in% prediction.years]
     this.models[,end.year:=c(year[-1]-1,tail(prediction.years,1))]
     
-    coefficients <- rbindlist::rbindlist(lapply(this.models$coefs,function(x){data.table::data.table(matrix(data=x,ncol=length(x),byrow=T,dimnames=list(NA,names(x))))}),fill=T)
+    coefficients <- data.table::rbindlist(lapply(this.models$coefs,function(x){data.table::data.table(matrix(data=x,ncol=length(x),byrow=T,dimnames=list(NA,names(x))))}),fill=T)
     this.newx <- newx[,names(coefficients),with=F]
     
     model.rows <- rep(1:nrow(coefficients),times=diff(c(this.models$year,tail(prediction.years,1)+1)))
