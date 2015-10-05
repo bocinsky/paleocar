@@ -58,7 +58,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   predyears <- as.numeric(rownames(predlist))
   hinge.year <- min(predyears[predyears>max(calibration.years)])
   
-  if(!force.redo & file.exists(paste(out.dir,label,".carscores.Rds",sep='')) && ncol(readRDS(paste(out.dir,label,".carscores.Rds",sep='')))==ncol(predictand.matrix)){
+  if(!force.redo & file.exists(paste(out.dir,label,".carscores.Rds",sep=''))){
     carscores <- readRDS(paste(out.dir,label,".carscores.Rds",sep=''))
   }else{
     carscores <- carscore.batch(predictand.matrix=predictand.matrix, predictor.matrix=predictor.matrix)
