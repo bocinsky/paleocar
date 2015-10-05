@@ -28,7 +28,7 @@
 #'   \item{\code{errors}  The PaleoCAR reconstruction average LOOCV error, as computed by \code{\link{errors.paleocar.models.batch}}.}
 #'   \item{\code{sizes}  The PaleoCAR model sizes, as computed by \code{\link{size.paleocar.models.batch}}.}
 #' }
-paleoCAR.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, label, out.dir="./OUTPUT/", min.width=NULL, meanVar = "none", floor=NULL, ceiling=NULL, asInt=F, force.redo=F, verbose=F){
+paleoCAR.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, label, out.dir="./OUTPUT/", min.width=NULL, meanVar = "none", floor=NULL, ceiling=NULL, asInt=F, force.redo=F, verbose=F, return.objects=T){
   t <- Sys.time()
   if(verbose) cat("\nCalculating all models")
   models <- paleoCAR.models.batch(chronologies=chronologies, predictands=predictands, calibration.years=calibration.years, prediction.years=prediction.years, label=label, out.dir=out.dir, min.width=min.width, force.redo=force.redo, verbose=verbose)
@@ -49,21 +49,26 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
       recon$predictions <- calc(recon$predictions,function(x){round(x,digits=0)})
       type <- "INT2S"
     }else{type="FLT4S"}
-    writeRaster(recon$predictions,paste(out.dir,label,".recon.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+    raster::writeRaster(recon$predictions,paste(out.dir,label,".recon.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
     
     if(asInt){
       recon$errors <- calc(recon$errors,function(x){round(x,digits=0)})
       type="INT2U"
     }else{type="FLT4S"}
-    writeRaster(recon$errors,paste(out.dir,label,".errors.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+    raster::writeRaster(recon$errors,paste(out.dir,label,".errors.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
     
-    writeRaster(recon$sizes,paste(out.dir,label,".size.tif",sep=''), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+    raster::writeRaster(recon$sizes,paste(out.dir,label,".size.tif",sep=''), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
     
     saveRDS(recon,paste(out.dir,label,".recon.Rds",sep=''),compress='xz')
   }
   
   if(verbose) cat("\nThe entire reconstruction took", difftime(Sys.time(),t,units='mins'),"minutes")
   
-  return(list(models=models,recon=recon$predictions,errors=recon$errors,sizes=recon$sizes))
+  if(return.objects){
+    return(list(models=models,recon=recon$predictions,errors=recon$errors,sizes=recon$sizes)) 
+  }else{
+    rm(models,recon); gc(); gc()
+    return(NULL)
+  }
 }
 
