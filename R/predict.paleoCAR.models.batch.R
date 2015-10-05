@@ -37,7 +37,7 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
   
   models[['reconstruction.matrix']] <- models[['reconstruction.matrix']][as.numeric(rownames(models[['reconstruction.matrix']])) %in% prediction.years,]
   
-  newx <- data.table(cbind(1,models[['reconstruction.matrix']]))
+  newx <- data.table::data.table(cbind(1,models[['reconstruction.matrix']]))
   setnames(newx,c("Intercept",colnames(models[['reconstruction.matrix']])))
   rownames(newx) <- prediction.years
   newx.present <- !is.na(as.matrix(newx)[,-1])
@@ -53,7 +53,7 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
     this.models <- models[['models']][cell==this.cell & year %in% prediction.years]
     this.models[,end.year:=c(year[-1]-1,tail(prediction.years,1))]
     
-    coefficients <- rbindlist(lapply(this.models$coefs,function(x){data.table(matrix(data=x,ncol=length(x),byrow=T,dimnames=list(NA,names(x))))}),fill=T)
+    coefficients <- rbindlist::rbindlist(lapply(this.models$coefs,function(x){data.table::data.table(matrix(data=x,ncol=length(x),byrow=T,dimnames=list(NA,names(x))))}),fill=T)
     this.newx <- newx[,names(coefficients),with=F]
     
     model.rows <- rep(1:nrow(coefficients),times=diff(c(this.models$year,tail(prediction.years,1)+1)))
@@ -154,9 +154,9 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
   predictions <- sapply(predictions,'[[','predictions')
   
   if(class(models[["predictands"]]) %in% c("RasterBrick","RasterStack")){
-    predictions <- setValues(models[["predictands"]],t(predictions))
-    errors <- setValues(models[["predictands"]],t(errors))
-    sizes <- setValues(models[["predictands"]],t(sizes))
+    predictions <- raster::setValues(models[["predictands"]],t(predictions))
+    errors <- raster::setValues(models[["predictands"]],t(errors))
+    sizes <- raster::setValues(models[["predictands"]],t(sizes))
   }
   return(list(predictions=predictions,errors=errors,sizes=sizes))
   
