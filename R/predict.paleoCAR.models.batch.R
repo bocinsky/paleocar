@@ -48,7 +48,7 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
   rownames(newx.calib) <- rownames(models[['predictor.matrix']])
   calib.years <- as.numeric(row.names(newx.calib))
   
-  predictions <- lapply(unique(models[['models']][['cell']]),function(this.cell){
+  predictions <- sapply(unique(models[['models']][['cell']]),function(this.cell){
     # cat(this.cell,"\n")
     this.models <- models[['models']][cell==this.cell & year %in% prediction.years]
     this.models[,end.year:=c(year[-1]-1,tail(prediction.years,1))]
@@ -142,22 +142,23 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
     }
     
     # Errors
-    errors <- (this.models$CV)[model.rows]
-    sizes <- (this.models$numPreds)[model.rows]
-    
-    return(list(predictions=this.predictions,errors=errors,sizes=sizes))
+#     errors <- (this.models$CV)[model.rows]
+#     sizes <- (this.models$numPreds)[model.rows]
+#     
+#     return(list(predictions=this.predictions,errors=errors,sizes=sizes))
+    return(this.predictions)
   })
-  names(predictions) <- unique(models[['models']][['cell']])
+  # names(predictions) <- unique(models[['models']][['cell']])
   
-  errors <- sapply(predictions,'[[','errors')
-  sizes <- sapply(predictions,'[[','sizes')
-  predictions <- sapply(predictions,'[[','predictions')
+#   errors <- sapply(predictions,'[[','errors')
+#   sizes <- sapply(predictions,'[[','sizes')
+  # predictions <- sapply(predictions,'[[','predictions')
   
-  if(class(models[["predictands"]]) %in% c("RasterBrick","RasterStack")){
+  # if(class(models[["predictands"]]) %in% c("RasterBrick","RasterStack")){
     predictions <- raster::setValues(models[["predictands"]],t(predictions))
-    errors <- raster::setValues(models[["predictands"]],t(errors))
-    sizes <- raster::setValues(models[["predictands"]],t(sizes))
-  }
-  return(list(predictions=predictions,errors=errors,sizes=sizes))
+#     errors <- raster::setValues(models[["predictands"]],t(errors))
+#     sizes <- raster::setValues(models[["predictands"]],t(sizes))
+  # }
+  return(predictions)
   
 }
