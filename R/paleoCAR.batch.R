@@ -40,16 +40,16 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
     recon <- predict.paleocar.models.batch(models=models, meanVar=meanVar, prediction.years=prediction.years)
     
     if(!is.null(floor)){
-      recon$predictions <- calc(recon$predictions,function(x){x[x<floor] <- floor; return(x)})
+      recon <- calc(recon,function(x){x[x<floor] <- floor; return(x)})
     }
     if(!is.null(ceiling)){
-      recon$predictions <- calc(recon$predictions,function(x){x[x>ceiling] <- ceiling; return(x)})
+      recon <- calc(recon,function(x){x[x>ceiling] <- ceiling; return(x)})
     }
     if(asInt){
-      recon$predictions <- calc(recon$predictions,function(x){round(x,digits=0)})
+      recon <- calc(recon,function(x){round(x,digits=0)})
       type <- "INT2S"
     }else{type="FLT4S"}
-    raster::writeRaster(recon$predictions,paste(out.dir,label,".recon.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+    raster::writeRaster(recon,paste(out.dir,label,".recon.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
     
 #     if(asInt){
 #       recon$errors <- calc(recon$errors,function(x){round(x,digits=0)})
