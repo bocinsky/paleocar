@@ -35,18 +35,20 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
   
   if(verbose) cat("\nGenerating reconstruction")
   if(!force.redo & file.exists(paste(out.dir,label,".recon.tif",sep=''))){
-    recon <- raster::brick(paste(out.dir,label,".recon.tif",sep=''))
+    if(return.objects){
+      recon <- raster::brick(paste(out.dir,label,".recon.tif",sep=''))
+    }
   }else{
     recon <- predict.paleocar.models.batch(models=models, meanVar=meanVar, prediction.years=prediction.years)
     
     if(!is.null(floor)){
-      recon <- calc(recon,function(x){x[x<floor] <- floor; return(x)})
+      recon <- raster::calc(recon,function(x){x[x<floor] <- floor; return(x)})
     }
     if(!is.null(ceiling)){
-      recon <- calc(recon,function(x){x[x>ceiling] <- ceiling; return(x)})
+      recon <- raster::calc(recon,function(x){x[x>ceiling] <- ceiling; return(x)})
     }
     if(asInt){
-      recon <- calc(recon,function(x){round(x,digits=0)})
+      recon <- raster::calc(recon,function(x){round(x,digits=0)})
       type <- "INT2S"
     }else{type="FLT4S"}
     raster::writeRaster(recon,paste(out.dir,label,".recon.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
