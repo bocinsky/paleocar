@@ -35,7 +35,7 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
   
   if(verbose) cat("\nGenerating reconstruction")
   if(!force.redo & file.exists(paste(out.dir,label,".recon.tif",sep=''))){
-    recon <- readRDS(paste(out.dir,label,".recon.tif",sep=''))
+    recon <- raster::brick(paste(out.dir,label,".recon.tif",sep=''))
   }else{
     recon <- predict.paleocar.models.batch(models=models, meanVar=meanVar, prediction.years=prediction.years)
     
@@ -65,7 +65,7 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
   if(verbose) cat("\nThe entire reconstruction took", difftime(Sys.time(),t,units='mins'),"minutes")
   
   if(return.objects){
-    return(list(models=models,recon=recon$predictions,errors=recon$errors,sizes=recon$sizes)) 
+    return(list(models=models,recon=recon)) 
   }else{
     rm(models,recon); gc(); gc()
     return(NULL)
