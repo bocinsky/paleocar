@@ -35,9 +35,9 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
   
   if(verbose) cat("\nGenerating reconstruction")
   if(!force.redo & file.exists(paste(out.dir,label,".recon.tif",sep=''))){
-    if(return.objects){
-      recon <- raster::brick(paste(out.dir,label,".recon.tif",sep=''))
-    }
+    
+    recon <- raster::brick(paste(out.dir,label,".recon.tif",sep=''))
+    
   }else{
     recon <- predict.paleocar.models.batch(models=models, meanVar=meanVar, prediction.years=prediction.years)
     
@@ -53,14 +53,14 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
     }else{type="FLT4S"}
     raster::writeRaster(recon,paste(out.dir,label,".recon.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
     
-#     if(asInt){
-#       recon$errors <- calc(recon$errors,function(x){round(x,digits=0)})
-#       type="INT2U"
-#     }else{type="FLT4S"}
-#     raster::writeRaster(recon$errors,paste(out.dir,label,".errors.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
-#     
-#     raster::writeRaster(recon$sizes,paste(out.dir,label,".size.tif",sep=''), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
-#     
+    #     if(asInt){
+    #       recon$errors <- calc(recon$errors,function(x){round(x,digits=0)})
+    #       type="INT2U"
+    #     }else{type="FLT4S"}
+    #     raster::writeRaster(recon$errors,paste(out.dir,label,".errors.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+    #     
+    #     raster::writeRaster(recon$sizes,paste(out.dir,label,".size.tif",sep=''), datatype="INT2U", options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+    #     
     # saveRDS(recon,paste(out.dir,label,".recon.Rds",sep=''),compress='xz')
   }
   
