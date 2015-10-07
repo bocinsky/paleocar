@@ -58,9 +58,9 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   predyears <- as.numeric(rownames(predlist))
   hinge.year <- min(predyears[predyears>max(calibration.years)])
   
-#   if(!force.redo & file.exists(paste(out.dir,label,".carscores.Rds",sep=''))){
-#     carscores <- readRDS(paste(out.dir,label,".carscores.Rds",sep=''))
-#   }else{
+  if(!force.redo & file.exists(paste(out.dir,label,".carscores.Rds",sep=''))){
+    carscores <- readRDS(paste(out.dir,label,".carscores.Rds",sep=''))
+  }else{
     carscores <- carscore.batch(predictand.matrix=predictand.matrix, predictor.matrix=predictor.matrix)
     carscores.ranks <- matrixStats::colRanks(1-(carscores^2), preserveShape=T)
     rownames(carscores.ranks) <- rownames(carscores)
@@ -69,7 +69,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     rm(carscores.ranks); gc(); gc()
     carscores <- data.table::data.table(t(carscores))
     saveRDS(carscores, paste(out.dir,label,".carscores.Rds",sep=''), compress='xz')
-  # }
+  }
   
   if(verbose) cat("\nPrepare data and calculate CAR scores:", round(difftime(Sys.time(),t,units='mins'),digits=2),"minutes\n")
   
