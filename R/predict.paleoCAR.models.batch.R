@@ -140,25 +140,18 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
       this.predictions <- (this.predictions*scalars[model.rows]) + transforms[model.rows]
       
     }
-    
-    # Errors
-#     errors <- (this.models$CV)[model.rows]
-#     sizes <- (this.models$numPreds)[model.rows]
-#     
-#     return(list(predictions=this.predictions,errors=errors,sizes=sizes))
     return(this.predictions)
   })
-  # names(predictions) <- unique(models[['models']][['cell']])
-  
-#   errors <- sapply(predictions,'[[','errors')
-#   sizes <- sapply(predictions,'[[','sizes')
-  # predictions <- sapply(predictions,'[[','predictions')
-  
-  # if(class(models[["predictands"]]) %in% c("RasterBrick","RasterStack")){
-    predictions <- raster::setValues(models[["predictands"]],t(predictions))
-#     errors <- raster::setValues(models[["predictands"]],t(errors))
-#     sizes <- raster::setValues(models[["predictands"]],t(sizes))
-  # }
+
+
+  non_na_cells <- which(!is.na(models[["predictands"]][[1]][]))
+  new.matrix <- matrix(NA,nrow=ncell(models[["predictands"]]),ncol=length(prediction.years))
+  new.matrix[non_na_cells,] <- t(predictions)
+  rm(predictions);gc();gc()
+  predictions <- raster::setValues(models[["predictands"]],new.matrix)
+
   return(predictions)
   
 }
+
+
