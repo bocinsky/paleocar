@@ -16,5 +16,6 @@ getPredictorMatrix <- function(chronologies,calibration.years,min.width=NULL){
   
   predictor.matrix <- chronologies[['widths']][YEARS %in% calibration.years,]
   predictor.matrix <- predictor.matrix[,t(complete.cases(t(predictor.matrix)))]
+  predictor.matrix <- predictor.matrix[,!duplicated(t(predictor.matrix))]
   return(as.matrix(predictor.matrix))
 }

@@ -91,8 +91,9 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
       
       pred.names <- colnames(preds)[preds[this.year,]]
       if(all((rownames(carscores) %in% complete.cells))) return(NULL)
-      models <- data.table::data.table(matrixStats::rowRanks(as.matrix(carscores[!(rownames(carscores) %in% complete.cells),pred.names,with = F]))<=i)
+      models <- data.table::data.table(matrixStats::rowRanks(as.matrix(carscores[!(rownames(carscores) %in% complete.cells),pred.names,with = F]), ties.method = 'min')<=i)
       data.table::setnames(models,pred.names)
+      # which(apply(as.matrix(models),1,function(x){!any(x)}))
       models[,cell:=as.numeric(rownames(carscores)[!(rownames(carscores) %in% complete.cells)])]
       # models <- models[cell %in% which(!completed.cells)]
       data.table::setorderv(models,pred.names,rep(-1,length(pred.names)))
@@ -107,7 +108,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
       if(length(blank.models)>0){
         models[,blank.models:=NULL, with=F]
       }
-      
+      # if(any(apply(as.matrix(models),1,function(x){!any(x)}))) error("PROBLEM!")
       return(list(models=models,matches=models.matches))
     })
     gc();gc()
@@ -177,6 +178,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     
     new.t <- Sys.time()
     all.lms <- lapply(1:nrow(models),function(this.model){
+      cat(this.model,'\n')
       if(!(this.model %in% matches[['model']])) return(NULL)
       cells <- unique(matches[.(this.model),cell])
       
