@@ -60,6 +60,43 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
     
     this.predictions <- rowSums(coefficients[model.rows]*this.newx, na.rm=T)
     
+    
+    
+#     if(meanVar == "long.chained"){
+#       
+#     }
+#     
+#     ## TEST
+#     test <- lapply(this.models$coefs,function(coefs){
+#       this.coefs <- data.table::data.table(matrix(data=coefs,ncol=length(coefs),byrow=T,dimnames=list(NA,names(coefs))))
+#       this.this.newx <- newx[,names(this.coefs),with=F]
+#       return(rowSums(this.coefs[rep(1,nrow(this.this.newx)),]*this.this.newx))
+#     })
+#     for(i in 2:length(test)){
+#       plot(1,type='n',xlim=c(0,2000),ylim=c(0,500))
+#       library(RColorBrewer)
+#       colors <- colorRampPalette(brewer.pal(9,"Spectral"))(length(test))
+#       col.i <- 1
+#       for(series in test[order(this.models$AICc)][1:i-1]){
+#         lines(y=series,x=1:2000,col=colors[col.i])
+#         col.i <- col.i+1
+#       }
+#       series <- test[order(this.models$AICc)][[i]]
+#       series.gray <- series
+#       series.gray[which(model.rows==order(this.models$AICc)[i])] <- NA
+#       series.black <- series
+#       series.black[which(model.rows!=order(this.models$AICc)[i])] <- NA
+#       lines(y=series.gray,x=1:2000,col="gray75")
+#       lines(y=series.black,x=1:2000,col="black")
+#       
+#     }
+
+    
+    
+    
+    
+    
+    
     if(meanVar == "chained"){
       
       spans <- lapply(1:length(this.models$year),function(i){this.models$year[i]:(c(this.models$year,tail(prediction.years,1)+1)[i+1]-1)})
