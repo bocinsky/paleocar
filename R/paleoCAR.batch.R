@@ -20,6 +20,8 @@
 #' @param ceiling Numeric, an optional upper bound for reconstructed values.
 #' @param asInt Logical, should reconstructed values be rounded to integers for saving?
 #' @param force.redo Logical, should all computations be re-computed?
+#' @param generate.reconstruction Logical, should the reconstruction be generated (as opposed to only the models)?
+#' @param return.objects Logical, should objects be returned (as opposed to only writing them to disk)?
 #' @param verbose Logical, display status messages during run.
 #' @return A named list containing
 #' \itemize{
