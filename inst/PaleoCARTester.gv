@@ -1,0 +1,29 @@
+digraph Workflow {
+rankdir=LR
+fontname=Courier; fontsize=18; labelloc=t
+label=main
+subgraph cluster_workflow_box_outer { label=""; color=black; penwidth=2
+subgraph cluster_workflow_box_inner { label=""; color=white
+node[shape=box style=filled fillcolor="#CCFFCC" peripheries=1 fontname=Courier]
+"paleoCAR.batch"
+edge[fontname=Helvetica]
+}}
+subgraph cluster_input_ports_group_outer { label=""; color=white
+subgraph cluster_input_ports_group_inner { label=""; color=white
+node[shape=circle style=filled fillcolor="#FFFFFF" peripheries=1 fontname=Courier width=0.2]
+"calibration.years_input_port" [label=""]
+"prediction.years_input_port" [label=""]
+itrdb_input_port [label=""]
+mvnp_prism_input_port [label=""]
+}}
+subgraph cluster_output_ports_group_outer { label=""; color=white
+subgraph cluster_output_ports_group_inner { label=""; color=white
+node[shape=circle style=filled fillcolor="#FFFFFF" peripheries=1 fontname=Courier width=0.2]
+}}
+edge[fontname=Helvetica]
+"calibration.years_input_port" -> "paleoCAR.batch" [label="calibration.years"]
+"prediction.years_input_port" -> "paleoCAR.batch" [label="prediction.years"]
+mvnp_prism_input_port -> "paleoCAR.batch" [label=mvnp_prism]
+itrdb_input_port -> "paleoCAR.batch" [label=itrdb]
+edge[fontname=Helvetica]
+}

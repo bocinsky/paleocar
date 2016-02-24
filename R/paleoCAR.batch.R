@@ -5,8 +5,7 @@
 #' a \code{floor} and/or \code{ceiling} corrections for a reconstruction (e.g., of precipitation).
 #' It returns a list containing the models, predictions, cross-validated errors, and model sizes.
 #'
-#' @param chronologies A matrix of tree ring chronologies, indexed annually.
-#' Each chronology is a column. The first column must be labeled "YEAR" and is the calendar year.
+#' @param chronologies An ITRDB object, as in from FedData::get_itrdb.
 #' @param predictands A RasterBrick or RasterStack of the numeric predictand (response) variable.
 #' @param calibration.years An integer vector of years corresponding to the layers in the \code{predictands} brick.
 #' @param prediction.years An optional integer vector of years for the reconstruction.
@@ -33,6 +32,11 @@
 paleoCAR.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, label, out.dir="./OUTPUT/", min.width=NULL, meanVar = "none", floor=NULL, ceiling=NULL, asInt=F, force.redo=F, verbose=F, generate.reconstruction=T, return.objects=T){
   t <- Sys.time()
   if(verbose) cat("\nCalculating all models")
+  if(meanVar == "chained" & !all(calibration.years %in% prediction.years)){
+    prediction.years <- head(prediction.years,1):tail(calibration.years,1)
+    warning("Chained mean-variance matching requires that the prediction.years include the calibration.years. Changing prediction years.")
+  }
+  
   models <- paleoCAR.models.batch(chronologies=chronologies, predictands=predictands, calibration.years=calibration.years, prediction.years=prediction.years, label=label, out.dir=out.dir, min.width=min.width, force.redo=force.redo, verbose=verbose)
   
   if(generate.reconstruction){
@@ -54,7 +58,9 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
         recon <- raster::calc(recon,function(x){round(x,digits=0)})
         type <- "INT2S"
       }else{type="FLT4S"}
-      raster::writeRaster(recon,paste(out.dir,label,".recon.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
+      
+      names(recon) <- prediction.years
+      raster::writeRaster(recon,paste(out.dir,"/",label,".recon.tif",sep=''), datatype=type, options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"), overwrite=T, setStatistics=FALSE)
       
       #     if(asInt){
       #       recon$errors <- calc(recon$errors,function(x){round(x,digits=0)})

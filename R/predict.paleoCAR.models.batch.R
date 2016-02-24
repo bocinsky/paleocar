@@ -60,43 +60,6 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
     
     this.predictions <- rowSums(coefficients[model.rows]*this.newx, na.rm=T)
     
-    
-    
-#     if(meanVar == "long.chained"){
-#       
-#     }
-#     
-#     ## TEST
-#     test <- lapply(this.models$coefs,function(coefs){
-#       this.coefs <- data.table::data.table(matrix(data=coefs,ncol=length(coefs),byrow=T,dimnames=list(NA,names(coefs))))
-#       this.this.newx <- newx[,names(this.coefs),with=F]
-#       return(rowSums(this.coefs[rep(1,nrow(this.this.newx)),]*this.this.newx))
-#     })
-#     for(i in 2:length(test)){
-#       plot(1,type='n',xlim=c(0,2000),ylim=c(0,500))
-#       library(RColorBrewer)
-#       colors <- colorRampPalette(brewer.pal(9,"Spectral"))(length(test))
-#       col.i <- 1
-#       for(series in test[order(this.models$AICc)][1:i-1]){
-#         lines(y=series,x=1:2000,col=colors[col.i])
-#         col.i <- col.i+1
-#       }
-#       series <- test[order(this.models$AICc)][[i]]
-#       series.gray <- series
-#       series.gray[which(model.rows==order(this.models$AICc)[i])] <- NA
-#       series.black <- series
-#       series.black[which(model.rows!=order(this.models$AICc)[i])] <- NA
-#       lines(y=series.gray,x=1:2000,col="gray75")
-#       lines(y=series.black,x=1:2000,col="black")
-#       
-#     }
-
-    
-    
-    
-    
-    
-    
     if(meanVar == "chained"){
       
       spans <- lapply(1:length(this.models$year),function(i){this.models$year[i]:(c(this.models$year,tail(prediction.years,1)+1)[i+1]-1)})
@@ -104,11 +67,13 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
       
       if(pivot>1){
         available.below <- apply(this.models[1:(pivot-1),.(end.year,coefs)],1,function(d){
-          out <- which(rowSums(!is.na(newx[,names(d$coefs),with=F]))==length(names(d$coefs)))
+          out <- prediction.years[which(rowSums(!is.na(newx[,names(d$coefs),with=F]))==length(names(d$coefs)))]
           out <- out[out>d[1]]
           out.rle <- rle(diff(out))
-          out.rle.start <- which(cumsum(out.rle$lengths)==cumsum(out.rle$lengths)[head(which(out.rle$lengths>=length(calib.years) & out.rle$values==1),1)])
-          out <- out[out.rle.start:(out.rle.start+length(calib.years)-1)]
+          out.rle.start <- which(cumsum(out.rle$lengths) == cumsum(out.rle$lengths)[head(which(out.rle$lengths>=length(calib.years) & out.rle$values==1),1)])
+          if(length(out.rle.start) > 0){
+            out <- out[out.rle.start:(out.rle.start+length(calib.years)-1)]
+          }
           return(out)
         })
       }else available.below <- NULL
@@ -133,15 +98,15 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
         this.newx[x]
       })
       
-      match.predictions <- matrix(rowSums(coefficients[rep(1:nrow(coefficients),each=length(calib.years))]*this.newx[as.vector(match.periods)], na.rm=T),nrow=length(calib.years))
+      match.predictions <- matrix(rowSums(coefficients[rep(1:nrow(coefficients),each=length(calib.years))]*this.newx[match(as.vector(match.periods),prediction.years)], na.rm=T),nrow=length(calib.years))
       
-      scale.center <- mean_var_match(calib.vector=predictands.matrix[,this.cell],out.calib.vector=match.predictions[,pivot], out.vector=this.predictions[spans[[pivot]]])
+      scale.center <- mean_var_match(calib.vector=predictands.matrix[,this.cell],out.calib.vector=match.predictions[,pivot], out.vector=this.predictions[match(spans[[pivot]],prediction.years)])
       names(scale.center) <- spans[[pivot]]
       
       if(pivot>1){
         for(i in (pivot-1):1){
           new.names <- c(as.character(spans[[i]]),names(scale.center))
-          scale.center <- c(mean_var_match(calib.vector=scale.center[as.character(match.periods[,i])],out.calib.vector=match.predictions[,i], out.vector=this.predictions[spans[[i]]]),scale.center)
+          scale.center <- c(mean_var_match(calib.vector=scale.center[as.character(match.periods[,i])],out.calib.vector=match.predictions[,i], out.vector=this.predictions[match(spans[[i]],prediction.years)]),scale.center)
           names(scale.center) <- new.names
         }
       }
@@ -149,7 +114,7 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
       if(length(spans)>pivot){
         for(i in (pivot+1):length(spans)){
           new.names <- c(names(scale.center),as.character(spans[[i]]))
-          scale.center <- c(scale.center,mean_var_match(calib.vector=scale.center[as.character(match.periods[,i])],out.calib.vector=match.predictions[,i], out.vector=this.predictions[spans[[i]]]))
+          scale.center <- c(scale.center,mean_var_match(calib.vector=scale.center[as.character(match.periods[,i])],out.calib.vector=match.predictions[,i], out.vector=this.predictions[match(spans[[i]],prediction.years)]))
           names(scale.center) <- new.names
         }
       }
@@ -162,7 +127,7 @@ predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.y
       
       calibration.coefficients <- coefficients[,colnames(this.newx.calib),with=F]
       
-      calibration.predictors <- as.matrix(this.newx[as.numeric(calibration.years)])[rep(1:length(calibration.years),nrow(calibration.coefficients)),]
+      calibration.predictors <- as.matrix(this.newx[which(prediction.years %in% as.numeric(calibration.years))])[rep(1:length(calibration.years),nrow(calibration.coefficients)),]
       
       calibration.coefficients <- as.matrix(calibration.coefficients)[rep(1:nrow(calibration.coefficients),each=length(calibration.years)),]
       

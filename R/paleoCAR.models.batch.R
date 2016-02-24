@@ -29,6 +29,18 @@
 #'   \item{\code{predictor.matrix}  A matrix of predictors for calibration; \code{chronologies} cropped to \code{calibration.years}.}
 #'   \item{\code{reconstruction.matrix}  A matrix of predictors for reconstruction; \code{chronologies} cropped to \code{prediction.years}, or all of \code{chronologies} if \code{prediction.years==NULL}.}
 #' }
+## YesWorkflow markup!
+# @BEGIN main
+# @IN ITRDB_chronologies
+# @IN predictands
+# @IN calibration.years
+# @IN prediction.years
+# @PARAM min.width
+# @PARAM label
+# @PARAM out.dir
+# @PARAM force.redo
+# @PARAM verbose
+# @OUT final.models
 paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, min.width=NULL, label, out.dir="./OUTPUT/", force.redo=F, verbose=F){
   # if(verbose) cat("Calculating PaleoCAR models\n")
   if(!force.redo & file.exists(paste(out.dir,label,'.models.rds',sep=''))){
@@ -36,8 +48,15 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     return(allModels)
   }
   
+  # @BEGIN getPredictorMatrix
+  # @IN chronologies
+  # @IN calibration.years
+  # @PARAM min.width
+  # @OUT predictor.matrix
+  # @OUT max.preds
   t <- Sys.time()
   predictor.matrix <- getPredictorMatrix(chronologies=chronologies, calibration.years=calibration.years, min.width=min.width)
+  # @END getPredictorMatrix
   
   null.cells <- which(is.na(raster::getValues(predictands[[1]])))
   
@@ -48,16 +67,31 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     colnames(predictand.matrix) <- as.character(1:raster::ncell(predictands)) 
   }
   
+  # @BEGIN getReconstructionMatrix
+  # @IN chronologies
+  # @IN reconstruction.years
+  # @PARAM min.width
+  # @OUT reconstruction.matrix
   reconstruction.matrix <- getReconstructionMatrix(chronologies=chronologies, reconstruction.years=prediction.years, min.width=min.width)
   reconstruction.matrix <- reconstruction.matrix[,colnames(predictor.matrix)]
+  # @END getReconstructionMatrix
   
+  # @BEGIN getPredlist
+  # @IN reconstruction.matrix
+  # @OUT predlist
   predlist <- getPredlist(reconstruction.matrix)
+  # @END getPredlist
+  
   prednums <- rowSums(predlist, na.rm=T)
   prednums[prednums>maxPreds] <- maxPreds
   
   predyears <- as.numeric(rownames(predlist))
-  hinge.year <- min(predyears[predyears>max(calibration.years)])
+  hinge.year <- min(predyears[predyears>max(calibration.years)],max(calibration.years))
   
+  # @BEGIN getCarscores
+  # @IN predictand.matrix
+  # @IN predictor.matrix
+  # @OUT carscores @URI file:{out.dir}/{label}.carscores.Rds
   if(!force.redo & file.exists(paste(out.dir,label,".carscores.Rds",sep=''))){
     carscores <- readRDS(paste(out.dir,label,".carscores.Rds",sep=''))
   }else{
@@ -70,13 +104,23 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     carscores <- data.table::data.table(t(carscores))
     saveRDS(carscores, paste(out.dir,label,".carscores.Rds",sep=''), compress='xz')
   }
+  # @END getCarscores
   
   if(verbose) cat("\nPrepare data and calculate CAR scores:", round(difftime(Sys.time(),t,units='mins'),digits=2),"minutes\n")
   
+  # @BEGIN calculateModels
+  # @IN predlist
+  # @IN carscores
+  # @IN max.preds
+  # @OUT linear.models
   allModels <- data.table(cell=numeric(),year=numeric(),model=numeric(),numPreds=numeric(),CV=numeric(),AICc=numeric(),coefs=numeric())
   complete.cell.years <- data.table(cell=numeric(),year=numeric())
   times <- vector('numeric',max(prednums))
-  
+  # @BEGIN defineLinearModels
+  # @IN predlist
+  # @IN carscores
+  # @OUT models
+  # @OUT matches
   for(i in 1:maxPreds){
     if(verbose) cat("\nCalculating models of size",i)
     t <- Sys.time()
@@ -173,12 +217,16 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     }
     
     setkey(matches,model)
-    
+    # @END defineLinearModels
     if(verbose) cat("\nDefine models:", round(difftime(Sys.time(),new.t,units='mins'),digits=2),"minutes")
-    
+    # @BEGIN calculateLinearModels
+    # @IN models
+    # @IN matches
+    # @OUT coefficients
+    # @OUT model.errors
     new.t <- Sys.time()
     all.lms <- lapply(1:nrow(models),function(this.model){
-      cat(this.model,'\n')
+      # cat(this.model,'\n')
       if(!(this.model %in% matches[['model']])) return(NULL)
       cells <- unique(matches[.(this.model),cell])
       
@@ -218,7 +266,12 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     all.lms <- all.lms[!sapply(all.lms,is.null)]
     if(verbose) cat("\nCalculate",length(all.lms),"linear models:", round(difftime(Sys.time(),new.t,units='mins'),digits=2),"minutes")
     rm(models); gc(); gc()
+    # @END calculateLinearModels
     
+    # @BEGIN simplifyLinearModels
+    # @IN coefficients
+    # @IN model.errors
+    # @OUT final.models
     ## LMS SIMPLIFY PREP
     new.t <- Sys.time()
 
@@ -279,6 +332,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     setkey(allModels,cell,year,numPreds)
     
     if(verbose) cat("\nClean linear models:", round(difftime(Sys.time(),new.t,units='mins'),digits=2),"minutes")
+    # @END simplifyLinearModels
     
     time <- difftime(Sys.time(),t,units='mins')
     if(verbose) cat("\nTotal modeling time:",round(time,digits=2),"minutes\n")
@@ -290,7 +344,11 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   }
   
   if(verbose) cat("\nTotal Modeling Time:",sum(times),"minutes\n")
+  # @END calculateModels
   
+  # @BEGIN optimizeModels
+  # @IN linear.models
+  # @OUT final.models @URI file:{out.dir}/{label}.models.rds
   t <- Sys.time()
   get.coef.names <- function(year,model,coefs,numPreds,CV,AICc){
     the.coefs <- lapply(coefs,function(x){names(x)[-1]})
@@ -313,7 +371,8 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   
   allModels <- list(models=allModels, predictands=predictands, predictor.matrix=predictor.matrix, reconstruction.matrix=reconstruction.matrix)
   
-  saveRDS(allModels,file=paste(out.dir,label,'.models.rds',sep=''), compress='xz')
-
+  saveRDS(allModels,file=paste(out.dir,"/",label,'.models.rds',sep=''), compress='xz')
+  # @END optimizeModels
   return(allModels)
+  # @END main
 }
