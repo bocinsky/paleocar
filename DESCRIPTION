@@ -24,3 +24,4 @@ Depends:
     data.table,
     matrixStats
 RoxygenNote: 5.0.1
+Suggests: testthat
