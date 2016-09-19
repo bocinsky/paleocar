@@ -1,4 +1,4 @@
-Package: PaleoCAR
+Package: paleocar
 Type: Package
 Title: Paleoclimate Reconstruction from Tree Rings using Correlation Adjusted
     corRelation
