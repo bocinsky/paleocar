@@ -23,6 +23,7 @@
 #'   \item{\code{predictor.matrix}  A matrix of predictors for calibration; \code{chronologies} cropped to \code{calibration.years}.}
 #'   \item{\code{reconstruction.matrix}  A matrix of predictors for reconstruction; \code{chronologies} cropped to \code{prediction.years}, or all of \code{chronologies} if \code{prediction.years==NULL}.}
 #' }
+#' @export
 paleocar_models <- function(chronologies, predictand, calibration.years, reconstruction.years=NULL, verbose=F){
   predictor.matrix <- get_predictor_matrix(chronologies, calibration.years)
   

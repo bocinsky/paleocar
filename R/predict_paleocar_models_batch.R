@@ -29,6 +29,7 @@
 #' @import raster
 #' @import data.table
 #' @return A RasterBrick containing the predictions for each year.
+#' @export
 predict_paleocar_models_batch <- function(models, meanVar = "none", prediction.years=NULL){
   if(is.null(prediction.years)) prediction.years <- as.numeric(rownames(models[['reconstruction.matrix']]))
   

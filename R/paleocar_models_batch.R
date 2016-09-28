@@ -32,6 +32,7 @@
 #' @import raster
 #' @import data.table
 #' @import matrixStats
+#' @export
 ## YesWorkflow markup!
 # @BEGIN main
 # @IN ITRDB_chronologies
