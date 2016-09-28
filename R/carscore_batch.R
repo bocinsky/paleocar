@@ -7,7 +7,6 @@
 #' @param predictor.matrix A matrix of predictors. Columns are predictors, number of rows must equal number of layers in \code{predictand.matrix}.
 #' @import care
 #' @return A matrix of carscores.
-#' @export
 carscore_batch <- function(predictand.matrix, predictor.matrix){
   
   carscores <- apply(predictand.matrix,2,function(predictands){
