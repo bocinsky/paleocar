@@ -8,7 +8,7 @@
 #' If missing, will use all years in \code{chronologies}.
 #' @param min.width integer, indicating the minimum number of tree-ring samples allowed for that year of a chronology to be valid.
 #' @return A matrix of predictors for a reconstruction.
-getReconstructionMatrix <- function(chronologies,reconstruction.years=NULL,min.width=NULL){
+get_reconstruction_matrix <- function(chronologies,reconstruction.years=NULL,min.width=NULL){
   YEARS <- as.numeric(rownames(chronologies[['widths']]))
   
   if(is.null(reconstruction.years)){
@@ -16,7 +16,7 @@ getReconstructionMatrix <- function(chronologies,reconstruction.years=NULL,min.w
   }
   
   if(!is.null(min.width)){
-    chronologies[['widths']][chronologies[['depths']]<min.width] <- NA
+    chronologies[['widths']][chronologies[['depths']] < min.width] <- NA
   }
   
   reconstruction.matrix <- chronologies[['widths']][YEARS %in% reconstruction.years,]

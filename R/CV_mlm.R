@@ -6,8 +6,9 @@
 #' the corrected Akaike's Information Criterion.
 #'
 #' @param obj An object of class mlm or lm.
+#' @import forecast
 #' @return A matrix of of CV and AICc values for each model.
-CV.mlm <- function (obj) 
+CV_mlm <- function (obj) 
 {
   if(class(obj)[[1]]=="lm"){
     out <- forecast::CV(obj)[c("CV", "AICc")]
@@ -15,7 +16,7 @@ CV.mlm <- function (obj)
     return(out)
   }
   n <- nrow(obj$residuals)
-  aic.raw <- mlmAIC(obj)
+  aic.raw <- AIC_mlm(obj)
   k <- aic.raw$df - 1
   aic <- aic.raw$AIC + 2
   rm(aic.raw)

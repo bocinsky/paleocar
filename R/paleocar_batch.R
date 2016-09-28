@@ -14,7 +14,7 @@
 #' @param out.dir The directory to which output is to be saved.
 #' @param min.width integer, indicating the minimum number of tree-ring samples allowed for that year of a chronology to be valid.
 #' @param meanVar A character string indicating the type of mean-variance matching to perform: either "none" (default), "calibration", or "chained".
-#' @param chained.meanVar Logical, indicating whether to chain mean-variance matching if performed. See \code{\link{predict.paleocar.models.batch}}.
+#' @param chained.meanVar Logical, indicating whether to chain mean-variance matching if performed. See \code{\link{predict_paleocar_models_batch}}.
 #' @param floor Numeric, an optional lower bound for reconstructed values, such as \code{0} for precipitation reconstructions.
 #' @param ceiling Numeric, an optional upper bound for reconstructed values.
 #' @param asInt Logical, should reconstructed values be rounded to integers for saving?
@@ -24,12 +24,14 @@
 #' @param verbose Logical, display status messages during run.
 #' @return A named list containing
 #' \itemize{
-#'   \item{\code{models}  The PaleoCAR models, as computed by \code{\link{paleoCAR.models.batch}}.}
-#'   \item{\code{recon}  The PaleoCAR reconstruction, as computed by \code{\link{predict.paleocar.models.batch}}.}
-#'   \item{\code{errors}  The PaleoCAR reconstruction average LOOCV error, as computed by \code{\link{errors.paleocar.models.batch}}.}
-#'   \item{\code{sizes}  The PaleoCAR model sizes, as computed by \code{\link{size.paleocar.models.batch}}.}
+#'   \item{\code{models}  The PaleoCAR models, as computed by \code{\link{paleocar_models_batch}}.}
+#'   \item{\code{recon}  The PaleoCAR reconstruction, as computed by \code{\link{predict_paleocar_models_batch}}.}
+#'   \item{\code{errors}  The PaleoCAR reconstruction average LOOCV error, as computed by \code{\link{errors_paleocar_models_batch}}.}
+#'   \item{\code{sizes}  The PaleoCAR model sizes, as computed by \code{\link{size_paleocar_models_batch}}.}
 #' }
-paleoCAR.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, label, out.dir="./OUTPUT/", min.width=NULL, meanVar = "none", floor=NULL, ceiling=NULL, asInt=F, force.redo=F, verbose=F, generate.reconstruction=T, return.objects=T){
+#' @import raster
+#' @export
+paleocar_batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, label, out.dir="./OUTPUT/", min.width=NULL, meanVar = "none", floor=NULL, ceiling=NULL, asInt=F, force.redo=F, verbose=F, generate.reconstruction=T, return.objects=T){
   t <- Sys.time()
   if(verbose) cat("\nCalculating all models")
   if(meanVar == "chained" & !all(calibration.years %in% prediction.years)){
@@ -37,7 +39,7 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
     warning("Chained mean-variance matching requires that the prediction.years include the calibration.years. Changing prediction years.")
   }
   
-  models <- paleoCAR.models.batch(chronologies=chronologies, predictands=predictands, calibration.years=calibration.years, prediction.years=prediction.years, label=label, out.dir=out.dir, min.width=min.width, force.redo=force.redo, verbose=verbose)
+  models <- paleocar_models_batch(chronologies=chronologies, predictands=predictands, calibration.years=calibration.years, prediction.years=prediction.years, label=label, out.dir=out.dir, min.width=min.width, force.redo=force.redo, verbose=verbose)
   
   if(generate.reconstruction){
     if(verbose) cat("\nGenerating reconstruction")
@@ -46,7 +48,7 @@ paleoCAR.batch <- function(chronologies, predictands, calibration.years, predict
       recon <- raster::brick(paste(out.dir,label,".recon.tif",sep=''))
       
     }else{
-      recon <- predict.paleocar.models.batch(models=models, meanVar=meanVar, prediction.years=prediction.years)
+      recon <- predict_paleocar_models_batch(models=models, meanVar=meanVar, prediction.years=prediction.years)
       
       if(!is.null(floor)){
         recon <- raster::calc(recon,function(x){x[x<floor] <- floor; return(x)})

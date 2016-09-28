@@ -13,7 +13,7 @@ mvnp <- rgdal::readOGR("./data-raw/MVNP/meve_tracts", layer='MEVE_boundary')
 
 unlink("./data-raw/MVNP", recursive=T)
 
-rgdal::writeOGR(mvnp, dsn = "./data-raw/", layer = "mvnp", driver = "ESRI Shapefile")
+rgdal::writeOGR(mvnp, dsn = "./data-raw/", layer = "mvnp", driver = "ESRI Shapefile", overwrite_layer = TRUE)
 
 devtools::use_data(mvnp, overwrite = TRUE)
 
@@ -36,7 +36,7 @@ tree.buffer <- 10
 # create a 10-degree buffer around the four corner states
 treePoly <- suppressWarnings(rgeos::gBuffer(mvnp, width=tree.buffer, quadsegs=1000))
 # extract the re-whitened residuals of the tree-ring chronologies
-itrdb <- FedData::get_itrdb(template=treePoly, label="MVNP_PLUS_10DEG", raw.dir = "./data-raw/ITRDB/RAW/ITRDB/", extraction.dir = "./data-raw/ITRDB/EXTRACTIONS/ITRDB/", recon.years=prediction.years, calib.years=calibration.years, measurement.type="Ring Width", chronology.type="ARSTND")
+itrdb <- FedData::get_itrdb(template=treePoly, label="MVNP_PLUS_10DEG", raw.dir = "./data-raw/ITRDB/RAW/ITRDB/", extraction.dir = "./data-raw/ITRDB/EXTRACTIONS/ITRDB/", recon.years=prediction.years, calib.years=calibration.years, measurement.type="Ring Width", chronology.type="ARSTND", force.redo = TRUE)
 
 unlink("./data-raw/ITRDB", recursive = T)
 

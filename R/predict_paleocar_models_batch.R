@@ -23,11 +23,13 @@
 #' Thus, every reconstruction for a particular cell will have the same mean and 
 #' variance over the calibration period.
 #'
-#' @param models A PaleoCAR batch model, as returned from \code{\link{paleoCAR.models.batch}}.
+#' @param models A PaleoCAR batch model, as returned from \code{\link{paleocar_models_batch}}.
 #' @param meanVar A character string indicating the type of mean-variance matching to perform: either "none" (default), "calibration", or "chained".
 #' @param prediction.years The set of years over which to generate reconstruction rasters. Optional.
+#' @import raster
+#' @import data.table
 #' @return A RasterBrick containing the predictions for each year.
-predict.paleocar.models.batch <- function(models, meanVar = "none", prediction.years=NULL){
+predict_paleocar_models_batch <- function(models, meanVar = "none", prediction.years=NULL){
   if(is.null(prediction.years)) prediction.years <- as.numeric(rownames(models[['reconstruction.matrix']]))
   
   if(!all(prediction.years %in% as.numeric(row.names(models[['reconstruction.matrix']])))){

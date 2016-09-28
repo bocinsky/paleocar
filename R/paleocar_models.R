@@ -6,7 +6,7 @@
 #' linear model using the \code{\link{lm}} function. Model selection is performed by minizing corrected AIC.
 #' This occurs for every unique set of available predictors through time.
 #' 
-#' See \code{\link{paleoCAR.models.batch}} for a batch algorithm that is more efficient (though more 
+#' See \code{\link{paleoCAR_models_batch}} for a batch algorithm that is more efficient (though more 
 #' computationally complicated) than the algorithm provided here.
 #'
 #' @param chronologies A matrix of tree ring chronologies, indexed annually.
@@ -23,15 +23,15 @@
 #'   \item{\code{predictor.matrix}  A matrix of predictors for calibration; \code{chronologies} cropped to \code{calibration.years}.}
 #'   \item{\code{reconstruction.matrix}  A matrix of predictors for reconstruction; \code{chronologies} cropped to \code{prediction.years}, or all of \code{chronologies} if \code{prediction.years==NULL}.}
 #' }
-paleoCAR.models <- function(chronologies, predictand, calibration.years, reconstruction.years=NULL, verbose=F){
-  predictor.matrix <- getPredictorMatrix(chronologies, calibration.years)
+paleocar_models <- function(chronologies, predictand, calibration.years, reconstruction.years=NULL, verbose=F){
+  predictor.matrix <- get_predictor_matrix(chronologies, calibration.years)
   
   maxPreds <- nrow(predictor.matrix)-5
   
-  reconstruction.matrix <- getReconstructionMatrix(chronologies, reconstruction.years)
+  reconstruction.matrix <- get_reconstruction_matrix(chronologies, reconstruction.years)
   reconstruction.matrix <- reconstruction.matrix[,colnames(predictor.matrix)]
   
-  predlist <- getPredlist(reconstruction.matrix)
+  predlist <- get_predlist(reconstruction.matrix)
   prednums <- rowSums(predlist, na.rm=T)
   prednums[prednums>maxPreds] <- maxPreds
   
@@ -39,7 +39,7 @@ paleoCAR.models <- function(chronologies, predictand, calibration.years, reconst
   hinge.year <- min(predyears[predyears>max(calibration.years)])
   
   
-  carscores <- carscore(Xtrain=predictor.matrix, Ytrain=predictand, verbose=F)
+  carscores <- care::carscore(Xtrain=predictor.matrix, Ytrain=predictand, verbose=F)
   carscores.ranks <- rank(1-(carscores^2))
   names(carscores.ranks) <- colnames(predictor.matrix)
   carscores <- carscores.ranks
@@ -67,7 +67,7 @@ paleoCAR.models <- function(chronologies, predictand, calibration.years, reconst
   
   new.t <- Sys.time()
   all.lms <- lapply(models,function(year.models){
-    year.lms <- rbindlist(apply(year.models,1,function(this.model){
+    year.lms <- data.table::rbindlist(apply(year.models,1,function(this.model){
       model.lm <- lm(predictand~predictor.matrix[,this.model,drop=F])
       # Get model errors
       model.errors <- data.table::data.table(numPred=ncol(predictor.matrix[,this.model,drop=F]),t(CV(model.lm)[c("CV","AICc")]))
@@ -76,7 +76,7 @@ paleoCAR.models <- function(chronologies, predictand, calibration.years, reconst
       coefs <- data.table::data.table(t(as.matrix(model.lm$coefficients)))
       data.table::setnames(coefs,c("Intercept",colnames(predictor.matrix[,this.model,drop=F])))
       coefs[,setdiff(colnames(predictor.matrix),names(coefs)):=NA]
-      setcolorder(coefs,c("Intercept",colnames(predictor.matrix)))
+      data.table::setcolorder(coefs,c("Intercept",colnames(predictor.matrix)))
       
       out <- cbind(model.errors,coefs)
       return(out)
@@ -88,25 +88,25 @@ paleoCAR.models <- function(chronologies, predictand, calibration.years, reconst
   all.lms <- lapply(1:length(all.lms),function(i){
     lms <- all.lms[[i]]
     lms[,year:=as.numeric(names(all.lms)[i])]
-    setcolorder(lms,c('year','numPred','CV','AICc','Intercept',colnames(predictor.matrix)))
+    data.table::setcolorder(lms,c('year','numPred','CV','AICc','Intercept',colnames(predictor.matrix)))
     return(lms)
   })
   
-  all.lms <- rbindlist(all.lms)
+  all.lms <- data.table::rbindlist(all.lms)
   data.table::setkey(all.lms,year,AICc)
 
 #   if(verbose) cat("\nCalc lms:", Sys.time()-new.t)
   
   all.lms.below <- all.lms[year<hinge.year,]
   all.lms.above <- all.lms[year>=hinge.year,]
-  setorder(all.lms.below, year,AICc)
-  setorder(all.lms.above,-year,AICc)
+  data.table::setorder(all.lms.below, year,AICc)
+  data.table::setorder(all.lms.above,-year,AICc)
   
-  setkey(all.lms.below,NULL)
-  setkey(all.lms.above,NULL)
+  data.table::setkey(all.lms.below,NULL)
+  data.table::setkey(all.lms.above,NULL)
   
-  below.remove <- all.lms.below[,.(makeMonotonic(AICc),year)]
-  above.remove <- all.lms.above[,.(makeMonotonic(AICc),year)]
+  below.remove <- all.lms.below[,.(make_monotonic(AICc),year)]
+  above.remove <- all.lms.above[,.(make_monotonic(AICc),year)]
   
   all.lms.below <- all.lms.below[below.remove$V1]
   all.lms.above <- all.lms.above[above.remove$V1]
@@ -114,7 +114,7 @@ paleoCAR.models <- function(chronologies, predictand, calibration.years, reconst
   all.lms <- rbind(all.lms.below,all.lms.above)
   rm(all.lms.below,all.lms.above,below.remove,above.remove);gc();gc()
   
-  setkey(all.lms,year)
+  data.table::setkey(all.lms,year)
   
   allModels <- list(models=all.lms, predictand=predictand, predictor.matrix=predictor.matrix, reconstruction.matrix=reconstruction.matrix)
     

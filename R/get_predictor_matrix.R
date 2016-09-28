@@ -7,7 +7,7 @@
 #' @param calibration.years A vector of years to be used for calibration
 #' @param min.width integer, indicating the minimum number of tree-ring samples allowed for that year of a chronology to be valid.
 #' @return A matrix of predictors for a calibration
-getPredictorMatrix <- function(chronologies,calibration.years,min.width=NULL){
+get_predictor_matrix <- function(chronologies,calibration.years,min.width=NULL){
   YEARS <- as.numeric(rownames(chronologies[['widths']]))
   
   if(!is.null(min.width)){

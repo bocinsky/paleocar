@@ -4,10 +4,11 @@
 #' from a set of PaleoCAR models and represents them as a RasterBrick with
 #' layers for each reconstructed year.
 #'
-#' @param models A PaleoCAR batch model, as returned from \link{paleoCAR.models.batch}.
+#' @param models A PaleoCAR batch model, as returned from \link{paleocar_models_batch}.
 #' @param prediction.years The set of years over which to generate model size rasters.
+#' @import raster
 #' @return A RasterBrick containing the model sizes per year.
-size.paleocar.models.batch <- function(models, prediction.years=NULL){
+size_paleocar_models_batch <- function(models, prediction.years=NULL){
   if(is.null(prediction.years)) prediction.years <- as.numeric(rownames(models[['reconstruction.matrix']]))
   
   if(!all(prediction.years %in% as.numeric(row.names(models[['reconstruction.matrix']])))){
@@ -26,7 +27,7 @@ size.paleocar.models.batch <- function(models, prediction.years=NULL){
   })
   
   if(class(models[["predictands"]]) %in% c("RasterBrick","RasterStack")){
-    sizes <- setValues(models[["predictands"]],sizes)
+    sizes <- raster::setValues(models[["predictands"]],sizes)
   }
   
   return(sizes)

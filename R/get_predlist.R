@@ -6,7 +6,7 @@
 #' @param predictor.matrix A matrix of predictors for a reconstruction.
 #' Columns are predictors, rows are years.
 #' @return A matrix of unique combinations of predictors through time.
-getPredlist <- function(reconstruction.matrix){
+get_predlist <- function(reconstruction.matrix){
   reconstruction.matrix.present <- !is.na(reconstruction.matrix)
   # reconstruction.matrix.present[!reconstruction.matrix.present] <- NA
   reconstruction.matrix.present <- unique(reconstruction.matrix.present)

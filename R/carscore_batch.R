@@ -5,8 +5,10 @@
 #'
 #' @param predictand.matrix A matrix of predictand (response variables). Columns are predictands
 #' @param predictor.matrix A matrix of predictors. Columns are predictors, number of rows must equal number of layers in \code{predictand.matrix}.
+#' @import care
 #' @return A matrix of carscores.
-carscore.batch <- function(predictand.matrix, predictor.matrix){
+#' @export
+carscore_batch <- function(predictand.matrix, predictor.matrix){
   
   carscores <- apply(predictand.matrix,2,function(predictands){
     if(any(is.na(predictands))){
@@ -14,7 +16,7 @@ carscore.batch <- function(predictand.matrix, predictor.matrix){
       out[] <- NA
       return(out)
     }
-    return(carscore(Ytrain=predictands,Xtrain=predictor.matrix,verbose=F))
+    return(care::carscore(Ytrain=predictands,Xtrain=predictor.matrix,verbose=F))
   })
   
   return(carscores)

@@ -2,8 +2,8 @@
 
 ## Install and load PaleoCAR package
 # install.packages("devtools")
-# devtools::install_github("bocinsky/PaleoCAR")
-library(PaleoCAR)
+# devtools::install_github("bocinsky/paleocar")
+library(paleocar)
 library(raster)
 library(sp)
 
@@ -14,7 +14,7 @@ options(scipen=999)
 rasterOptions(chunksize=2e+07,maxmemory=2e+08)
 
 # Set a directory for testing
-testDir <- "~/PaleoCAR Test"
+testDir <- "~/paleocar test"
 
 dir.create(testDir, showWarnings=F, recursive=T)
 setwd(testDir)
@@ -40,13 +40,13 @@ prediction.years <- 500:1400
 ######## END PARAMETERS
 
 ## Load spatial polygon for the boundary of Mesa Verde National Park in southwestern Colorado:
-data("mvnp")
+data(mvnp)
 
 ## Get Tree-ring data from the ITRDB for 10-degree buffer around MVNP
-data("itrdb")
+data(itrdb)
 
 ## Get 1/3 arc-second PRISM data for the VEPII north study area
-data("mvnp_prism")
+data(mvnp_prism)
 
 ## Run PaleoCAR over the MVNP brick
 # @BEGIN paleoCAR.batch
@@ -63,7 +63,7 @@ data("mvnp_prism")
 # @IN label  @AS "mvnp_prism"
 # @IN chronologies  @AS itrdb
 # @OUT list  @AS mvnp_recon
-mvnp_recon <- paleoCAR.batch(predictands = mvnp_prism, label = "mvnp_prism", chronologies = itrdb, calibration.years = calibration.years, prediction.years=prediction.years, out.dir=".", meanVar="chained", floor=0, ceiling=NULL, asInt=T, force.redo=T, verbose=T)
+mvnp_recon <- paleocar_batch(predictands = mvnp_prism, label = "mvnp_prism", chronologies = itrdb, calibration.years = calibration.years, prediction.years=prediction.years, out.dir=".", meanVar="chained", floor=0, ceiling=NULL, asInt=T, force.redo=T, verbose=T)
 # @END paleoCAR.batch
 # @END main
 

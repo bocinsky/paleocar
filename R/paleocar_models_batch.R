@@ -6,7 +6,7 @@
 #' linear model using the \code{\link{lm}} function. Model selection is performed by minimizing corrected AIC.
 #' This occurs for every unique set of available predictors through time.
 #' 
-#' See \code{\link{paleoCAR.models}} for a simplified algorithm that fits a PaleoCAR model for 
+#' See \code{\link{paleocar_models}} for a simplified algorithm that fits a PaleoCAR model for 
 #' a single predictand. The batch algorithm gains efficiencies by minimizing the number of unique model calculations
 #' (using multiple-response models) and by halting calculations for individual predictands once they
 #' stabilize.
@@ -29,6 +29,9 @@
 #'   \item{\code{predictor.matrix}  A matrix of predictors for calibration; \code{chronologies} cropped to \code{calibration.years}.}
 #'   \item{\code{reconstruction.matrix}  A matrix of predictors for reconstruction; \code{chronologies} cropped to \code{prediction.years}, or all of \code{chronologies} if \code{prediction.years==NULL}.}
 #' }
+#' @import raster
+#' @import data.table
+#' @import matrixStats
 ## YesWorkflow markup!
 # @BEGIN main
 # @IN ITRDB_chronologies
@@ -41,22 +44,22 @@
 # @PARAM force.redo
 # @PARAM verbose
 # @OUT final.models
-paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, min.width=NULL, label, out.dir="./OUTPUT/", force.redo=F, verbose=F){
+paleocar_models_batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, min.width=NULL, label, out.dir="./OUTPUT/", force.redo=F, verbose=F){
   # if(verbose) cat("Calculating PaleoCAR models\n")
   if(!force.redo & file.exists(paste(out.dir,label,'.models.rds',sep=''))){
     allModels <- readRDS(paste(out.dir,label,'.models.rds',sep=''))
     return(allModels)
   }
   
-  # @BEGIN getPredictorMatrix
+  # @BEGIN get_predictor_matrix
   # @IN chronologies
   # @IN calibration.years
   # @PARAM min.width
   # @OUT predictor.matrix
   # @OUT max.preds
   t <- Sys.time()
-  predictor.matrix <- getPredictorMatrix(chronologies=chronologies, calibration.years=calibration.years, min.width=min.width)
-  # @END getPredictorMatrix
+  predictor.matrix <- get_predictor_matrix(chronologies=chronologies, calibration.years=calibration.years, min.width=min.width)
+  # @END get_predictor_matrix
   
   null.cells <- which(is.na(raster::getValues(predictands[[1]])))
   
@@ -67,26 +70,26 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     colnames(predictand.matrix) <- as.character(1:raster::ncell(predictands)) 
   }
   
-  # @BEGIN getReconstructionMatrix
+  # @BEGIN get_reconstruction_matrix
   # @IN chronologies
   # @IN reconstruction.years
   # @PARAM min.width
   # @OUT reconstruction.matrix
-  reconstruction.matrix <- getReconstructionMatrix(chronologies=chronologies, reconstruction.years=prediction.years, min.width=min.width)
+  reconstruction.matrix <- get_reconstruction_matrix(chronologies=chronologies, reconstruction.years=prediction.years, min.width=min.width)
   reconstruction.matrix <- reconstruction.matrix[,colnames(predictor.matrix)]
-  # @END getReconstructionMatrix
+  # @END get_reconstruction_matrix
   
-  # @BEGIN getPredlist
+  # @BEGIN get_predlist
   # @IN reconstruction.matrix
   # @OUT predlist
-  predlist <- getPredlist(reconstruction.matrix)
-  # @END getPredlist
+  predlist <- get_predlist(reconstruction.matrix)
+  # @END get_predlist
   
   prednums <- rowSums(predlist, na.rm=T)
-  prednums[prednums>maxPreds] <- maxPreds
+  prednums[prednums > maxPreds] <- maxPreds
   
   predyears <- as.numeric(rownames(predlist))
-  hinge.year <- min(predyears[predyears>max(calibration.years)],max(calibration.years))
+  hinge.year <- min(predyears[predyears > max(calibration.years)], max(calibration.years))
   
   # @BEGIN getCarscores
   # @IN predictand.matrix
@@ -95,7 +98,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   if(!force.redo & file.exists(paste(out.dir,label,".carscores.Rds",sep=''))){
     carscores <- readRDS(paste(out.dir,label,".carscores.Rds",sep=''))
   }else{
-    carscores <- carscore.batch(predictand.matrix=predictand.matrix, predictor.matrix=predictor.matrix)
+    carscores <- carscore_batch(predictand.matrix=predictand.matrix, predictor.matrix=predictor.matrix)
     carscores.ranks <- matrixStats::colRanks(1-(carscores^2), preserveShape=T)
     rownames(carscores.ranks) <- rownames(carscores)
     colnames(carscores.ranks) <- colnames(carscores)
@@ -113,8 +116,8 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   # @IN carscores
   # @IN max.preds
   # @OUT linear.models
-  allModels <- data.table(cell=numeric(),year=numeric(),model=numeric(),numPreds=numeric(),CV=numeric(),AICc=numeric(),coefs=numeric())
-  complete.cell.years <- data.table(cell=numeric(),year=numeric())
+  allModels <- data.table::data.table(cell=numeric(),year=numeric(),model=numeric(),numPreds=numeric(),CV=numeric(),AICc=numeric(),coefs=numeric())
+  complete.cell.years <- data.table::data.table(cell=numeric(),year=numeric())
   times <- vector('numeric',max(prednums))
   # @BEGIN defineLinearModels
   # @IN predlist
@@ -122,7 +125,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   # @OUT models
   # @OUT matches
   for(i in 1:maxPreds){
-    if(verbose) cat("\nCalculating models of size",i)
+    if(verbose) cat("\nCalculating models of with",i,"input vectors.")
     t <- Sys.time()
     
     new.t <- Sys.time()
@@ -168,15 +171,15 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     nummodels <- c(0,cumsum(sapply(models,nrow)))[0-(length(models)+1)]
     names(nummodels) <- names(models)
     
-    models <- rbindlist(models,fill=T)
+    models <- data.table::rbindlist(models,fill=T)
     pred.names <- sort(names(models))
-    setcolorder(models,pred.names)
+    data.table::setcolorder(models,pred.names)
     models[,model:=1:nrow(models)]
     
     if(nrow(models)==0) break
     ## Replace all NAs with FALSE (we aren't going to use those predictors, right?)
     for (this.model in seq_along(models)){
-      set(models, i=which(is.na(models[[this.model]])), j=this.model, value=F)
+      data.table::set(models, i=which(is.na(models[[this.model]])), j=this.model, value=F)
     }
     
     matches <- lapply(1:length(matches),function(count){return(list(year=rep(names(matches)[count],length(matches[[count]])),matches=matches[[count]]+nummodels[count]))})
@@ -186,19 +189,19 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     
     matches <- do.call(rbind,list(cell=as.integer(names(matches.matches)),year=as.integer(matches.years),model=as.integer(matches.matches)))
     colnames(matches) <- NULL
-    matches <- data.table(t(matches))
+    matches <- data.table::data.table(t(matches))
     
     rm(matches.years, matches.matches)
     gc();gc()
     
-    models <- setorderv(models,pred.names,rep(-1,length(pred.names)))
+    models <- data.table::setorderv(models,pred.names,rep(-1,length(pred.names)))
     models.duplicates <- !duplicated(models,by=pred.names)
     models.matches <- cumsum(models.duplicates)
     names(models.matches) <- models$model
     models.matches <- models.matches[order(as.numeric(names(models.matches)))]
     models <- models[models.duplicates,]
     models[,model:=NULL]
-    models.matches <- data.table(model=as.integer(names(models.matches)),new.model=models.matches)
+    models.matches <- data.table::data.table(model=as.integer(names(models.matches)),new.model=models.matches)
     
     setkey(matches,model)
     setkey(models.matches,model)
@@ -206,7 +209,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     matches <- matches[models.matches]
     matches[,model:=NULL]
     setnames(matches,c('cell','year','model'))
-    matches <- setorderv(matches,c('cell','year','model'),c(1,1,1))
+    matches <- data.table::setorderv(matches,c('cell','year','model'),c(1,1,1))
     
     rm(models.duplicates,models.matches); gc(); gc()
     
@@ -234,7 +237,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
       model.mlm <- lm(predictand.matrix[,cells,drop=F]~predictor.matrix[,predictand.names,drop=F])
       
       # Get model errors
-      model.errors <- data.table::data.table(CV.mlm(model.mlm))
+      model.errors <- data.table::data.table(CV_mlm(model.mlm))
       model.errors[,cell:=cells]
 
       data.table::setkey(model.errors,cell)
@@ -275,13 +278,13 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     ## LMS SIMPLIFY PREP
     new.t <- Sys.time()
 
-    all.lms <- rbindlist(all.lms,fill=T)
+    all.lms <- data.table::rbindlist(all.lms,fill=T)
     setkey(all.lms,cell,model)
     all.lms[,numPreds:=i]
     
     if(nrow(allModels)==0){
-      setkey(all.lms,cell,model)
-      setkey(matches,cell,model)
+      data.table::setkey(all.lms,cell,model)
+      data.table::setkey(matches,cell,model)
       allModels <- matches[all.lms]
 
       setcolorder(allModels,c("cell","year","model","numPreds","CV","AICc","coefs"))
@@ -294,17 +297,17 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     all.lms.stats <- matches[all.lms.stats]
     rm(matches)
     
-    setkey(all.lms.stats,cell,year,model)
+    data.table::setkey(all.lms.stats,cell,year,model)
     
     allModels.stats <- allModels[,.(cell,year,model,AICc)]
     
     allModels.stats <- rbind(allModels.stats,all.lms.stats,fill=T)
     
-    setkey(allModels.stats,cell,year)
-    setorder(allModels.stats,cell,year,AICc)
+    data.table::setkey(allModels.stats,cell,year)
+    data.table::setorder(allModels.stats,cell,year,AICc)
     allModels.stats <- allModels.stats[allModels.stats[,!duplicated(year),by=cell]$V1,]
     
-    setkey(allModels,cell,year,model)
+    data.table::setkey(allModels,cell,year,model)
     if(nrow(allModels.stats[model==0,.(cell,year,model)])>0){
       allModels.old <- merge(allModels.stats[model==0,.(cell,year,model)],allModels,by=c("cell","year","model"), all=T)
     }else{
@@ -314,15 +317,15 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
     if(nrow(allModels.stats[model!=0,.(cell,year,model)])>0){
       allModels.new <- merge(allModels.stats[model!=0,.(cell,year,model)],all.lms.stats,by=c("cell","year","model"), all=T)
       allModels.new <- merge(allModels.new[,.(cell,year,model)],all.lms,by=c("cell","model"),all=T)
-      setcolorder(allModels.new,c("cell","year","model","numPreds","CV","AICc","coefs"))
+      data.table::setcolorder(allModels.new,c("cell","year","model","numPreds","CV","AICc","coefs"))
     }else{
-      allModels.new <- data.table(cell=numeric(),year=numeric(),model=numeric(),numPreds=numeric(),CV=numeric(),AICc=numeric(),coefs=numeric())
+      allModels.new <- data.table::data.table(cell=numeric(),year=numeric(),model=numeric(),numPreds=numeric(),CV=numeric(),AICc=numeric(),coefs=numeric())
     }
     
     allModels <- rbind(allModels.old,allModels.new)
     
-    setkey(allModels,cell,year)
-    setorder(allModels,cell,year,AICc)
+    data.table::setkey(allModels,cell,year)
+    data.table::setorder(allModels,cell,year,AICc)
     allModels <- allModels[allModels[,!duplicated(year),by=cell]$V1,]
     
     complete.cell.years <- allModels[model==0,.(cell,year,model)]
@@ -353,7 +356,7 @@ paleoCAR.models.batch <- function(chronologies, predictands, calibration.years, 
   get.coef.names <- function(year,model,coefs,numPreds,CV,AICc){
     the.coefs <- lapply(coefs,function(x){names(x)[-1]})
     test.out <- lapply(the.coefs,function(x){which(rowSums(predlist[,x,drop=F])==length(x))})
-    test.out <- data.table(model=rep(1:length(test.out),times=sapply(test.out,length)), year=unlist(test.out))
+    test.out <- data.table::data.table(model=rep(1:length(test.out),times=sapply(test.out,length)), year=unlist(test.out))
     # test.out <- lapply(1:length(test.out),function(i){data.table(model=i,year=test.out[[i]])})
     # test.out <- rbindlist(test.out)
     test.out <- test.out[which(!duplicated(test.out[,year]))]

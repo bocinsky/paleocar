@@ -23,11 +23,11 @@
 #' Thus, every reconstruction through time for will have the same mean and 
 #' variance over the calibration period.
 #'
-#' @param models A PaleoCAR simple model, as returned from \code{\link{paleoCAR.models}}.
+#' @param models A PaleoCAR simple model, as returned from \code{\link{paleocar_models}}.
 #' @param meanVarMatch Whether or not to perform mean-variance matching.
 #' @param prediction.years The set of years over which to generate a reconstructions. Optional.
 #' @return A numeric vector containing the predictions for each year.
-predict.paleocar.models <- function(models, meanVarMatch = TRUE, years=NULL){
+predict_paleocar_models <- function(models, meanVarMatch = TRUE, years=NULL){
   if(is.null(years)) years <- as.numeric(rownames(models[['reconstruction.matrix']]))
   
   if(!all(years %in% as.numeric(row.names(models[['reconstruction.matrix']])))){
@@ -44,7 +44,7 @@ predict.paleocar.models <- function(models, meanVarMatch = TRUE, years=NULL){
   predictand.sd <- sd(models[['predictand']])
   
   breaks <- as.numeric(rownames(coefficients))
-  coefficients.expand <- matrix.expand(coefficients,1:2000)
+  coefficients.expand <- matrix_expand(coefficients,1:2000)
   predictions <- rowSums(coefficients.expand * cbind(1,models[['reconstruction.matrix']]), na.rm=T)
   
   if(meanVarMatch){
