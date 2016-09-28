@@ -2,8 +2,8 @@ Package: paleocar
 Type: Package
 Title: Paleoclimate Reconstruction from Tree Rings using Correlation Adjusted
     corRelation
-Version: 2.0
-Date: 2015-03-11
+Version: 3.0
+Date: 2016-09-28
 Author: R. Kyle Bocinsky <bocinsky@gmail.com>
 Maintainer: R. Kyle Bocinsky <bocinsky@gmail.com>
 Description: Functions to perform spatio-temporal paleoclimate reconstruction
@@ -15,7 +15,8 @@ Description: Functions to perform spatio-temporal paleoclimate reconstruction
     reconstruction of the rain-fed maize agricultural niche in the US Southwest.
     Nature Communications, 5:5618. doi: 10.1038/ncomms6618.
 License: GPL-3
-Depends:  data.table
+Depends:  R (>= 3.1),
+          data.table
 Imports:  FedData,
           care,
           forecast,

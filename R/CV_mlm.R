@@ -8,6 +8,7 @@
 #' @param obj An object of class mlm or lm.
 #' @import forecast
 #' @return A matrix of of CV and AICc values for each model.
+#' @importFrom stats hatvalues
 CV_mlm <- function (obj) 
 {
   if(class(obj)[[1]]=="lm"){
@@ -22,7 +23,7 @@ CV_mlm <- function (obj)
   rm(aic.raw)
   aicc <- aic + 2 * (k + 2) * (k + 3)/(n - k - 3)
 #   bic <- aic + (k + 2) * (log(n) - 2)
-  cv <- colMeans((obj$residuals/(1 - hatvalues(obj)))^2, na.rm = TRUE)
+  cv <- colMeans((obj$residuals/(1 - stats::hatvalues(obj)))^2, na.rm = TRUE)
   
   out <- do.call(cbind,list(cv, aicc))
   colnames(out) <- c("CV", "AICc")

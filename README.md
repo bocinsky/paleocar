@@ -1,9 +1,9 @@
-# PaleoCAR
+# paleocar
 An *R* package implementing functions to perform spatio-temporal paleoclimate reconstruction from tree-rings using the CAR (Correlation Adjusted corRelation) approach of Zuber and Strimmer (2011). It is optimized for speed and memory use.
 
 To install, use the following command in *R*:
 
-`devtools::install_github("bocinsky/PaleoCAR")`
+`devtools::install_github("bocinsky/paleocar")`
 
 This is based on the approach used in Bocinsky and Kohler (2014): Bocinsky, R. K. and Kohler, T. A. (2014). The primary difference is that here model selection is performed by minimizing the corrected Akaike's Information Criterion.
 

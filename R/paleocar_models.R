@@ -24,6 +24,7 @@
 #'   \item{\code{reconstruction.matrix}  A matrix of predictors for reconstruction; \code{chronologies} cropped to \code{prediction.years}, or all of \code{chronologies} if \code{prediction.years==NULL}.}
 #' }
 #' @export
+#' @importFrom stats lm
 paleocar_models <- function(chronologies, predictand, calibration.years, reconstruction.years=NULL, verbose=F){
   predictor.matrix <- get_predictor_matrix(chronologies, calibration.years)
   
@@ -69,7 +70,7 @@ paleocar_models <- function(chronologies, predictand, calibration.years, reconst
   new.t <- Sys.time()
   all.lms <- lapply(models,function(year.models){
     year.lms <- data.table::rbindlist(apply(year.models,1,function(this.model){
-      model.lm <- lm(predictand~predictor.matrix[,this.model,drop=F])
+      model.lm <- stats::lm(predictand~predictor.matrix[,this.model,drop=F])
       # Get model errors
       model.errors <- data.table::data.table(numPred=ncol(predictor.matrix[,this.model,drop=F]),t(CV(model.lm)[c("CV","AICc")]))
       
