@@ -40,13 +40,15 @@ prediction.years <- 500:1400
 ######## END PARAMETERS
 
 ## Load spatial polygon for the boundary of Mesa Verde National Park in southwestern Colorado:
+mvnp <- system.file("extdata", "mvnp.rda", package="paleocar")
 data(mvnp)
 
 ## Get Tree-ring data from the ITRDB for 10-degree buffer around MVNP
+itrdb <- system.file("extdata", "itrdb.rda", package="paleocar")
 data(itrdb)
 
 ## Get 1/3 arc-second PRISM data for the VEPII north study area
-data(mvnp_prism)
+data(system.file("extdata", "mvnp_prism.rda", package="paleocar"))
 
 ## Run PaleoCAR over the MVNP brick
 # @BEGIN paleoCAR.batch

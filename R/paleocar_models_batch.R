@@ -154,7 +154,7 @@ paleocar_models_batch <- function(chronologies, predictands, calibration.years, 
       blank.models <- !apply(models,2,any)
       blank.models <- names(blank.models)[blank.models]
       if(length(blank.models)>0){
-        models[,blank.models:=NULL, with=F]
+        models[,(blank.models):=NULL]
       }
       # if(any(apply(as.matrix(models),1,function(x){!any(x)}))) error("PROBLEM!")
       return(list(models=models,matches=models.matches))
