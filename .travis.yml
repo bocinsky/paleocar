@@ -1,0 +1,33 @@
+dist: trusty
+sudo: required
+
+language: r
+sudo: required
+cache: packages
+
+r:
+  - oldrel
+  - release
+  - devel
+
+#warnings_are_errors: false
+before_install:
+  - sudo add-apt-repository ppa:ubuntugis/ppa -y
+  - sudo apt-get update -q
+
+apt_packages:
+  - libssl-dev
+  - libcurl4-openssl-dev
+  - netcdf-bin
+  - libnetcdf-dev
+  - gdal-bin
+  - libgdal-dev
+  
+r_packages:
+  - roxygen2
+  - survival
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
