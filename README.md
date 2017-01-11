@@ -1,4 +1,8 @@
-# paleocar
+paleocar
+========
+
+[![Build Status](https://api.travis-ci.org/bocinsky/paleocar.png)](https://travis-ci.org/bocinsky/paleocar)
+
 An *R* package implementing functions to perform spatio-temporal paleoclimate reconstruction from tree-rings using the CAR (Correlation Adjusted corRelation) approach of Zuber and Strimmer (2011). It is optimized for speed and memory use.
 
 To install, use the following command in *R*:
