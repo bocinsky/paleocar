@@ -11,7 +11,7 @@ predict_paleocar_models(models, meanVarMatch = TRUE, years = NULL)
 
 \item{meanVarMatch}{Whether or not to perform mean-variance matching.}
 
-\item{prediction.years}{The set of years over which to generate a reconstructions. Optional.}
+\item{years}{The set of years over which to generate a reconstructions. Optional.}
 }
 \value{
 A numeric vector containing the predictions for each year.

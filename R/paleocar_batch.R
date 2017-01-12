@@ -14,7 +14,6 @@
 #' @param out.dir The directory to which output is to be saved.
 #' @param min.width integer, indicating the minimum number of tree-ring samples allowed for that year of a chronology to be valid.
 #' @param meanVar A character string indicating the type of mean-variance matching to perform: either "none" (default), "calibration", or "chained".
-#' @param chained.meanVar Logical, indicating whether to chain mean-variance matching if performed. See \code{\link{predict_paleocar_models_batch}}.
 #' @param floor Numeric, an optional lower bound for reconstructed values, such as \code{0} for precipitation reconstructions.
 #' @param ceiling Numeric, an optional upper bound for reconstructed values.
 #' @param asInt Logical, should reconstructed values be rounded to integers for saving?
@@ -29,9 +28,22 @@
 #'   \item{\code{errors}  The PaleoCAR reconstruction average LOOCV error, as computed by \code{\link{errors_paleocar_models_batch}}.}
 #'   \item{\code{sizes}  The PaleoCAR model sizes, as computed by \code{\link{size_paleocar_models_batch}}.}
 #' }
-#' @import raster
 #' @export
-paleocar_batch <- function(chronologies, predictands, calibration.years, prediction.years=NULL, label, out.dir="./OUTPUT/", min.width=NULL, meanVar = "none", floor=NULL, ceiling=NULL, asInt=F, force.redo=F, verbose=F, generate.reconstruction=T, return.objects=T){
+paleocar_batch <- function(chronologies,
+                           predictands,
+                           calibration.years,
+                           prediction.years=NULL,
+                           label,
+                           out.dir="./OUTPUT/",
+                           min.width=NULL,
+                           meanVar = "none",
+                           floor=NULL,
+                           ceiling=NULL,
+                           asInt=F,
+                           force.redo=F,
+                           verbose=F,
+                           generate.reconstruction=T,
+                           return.objects=T){
   t <- Sys.time()
   if(verbose) cat("\nCalculating all models")
   if(meanVar == "chained" & !all(calibration.years %in% prediction.years)){

@@ -1,3 +1,4 @@
+globalVariables(c("tile", "type"))
 #' Download, mask, and calculate the maize growing niche from the Bocinsky 2016 data
 #' available from the NOAA paleoclimate database:
 #' 
@@ -16,7 +17,9 @@
 #' Defaults to 1:2000.
 
 #' @return A logical RasterBrick of the niche, through time.
-#' @import raster FedData XML sp foreach httr
+#' @importFrom magrittr %>% %<>%
+#' @importFrom foreach %do%
+#' @importFrom utils head tail
 #' @export
 get_bocinsky2016 <- function(template = NULL,
                                dir_out = "./OUTPUT/",

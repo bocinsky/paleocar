@@ -1,3 +1,4 @@
+library(raster)
 testthat::context("paleocar batch tests")
 
 testthat::test_that("The Daymet tiles are available at the correct URL", {
@@ -5,7 +6,7 @@ testthat::test_that("The Daymet tiles are available at the correct URL", {
   options(scipen=999)
   
   # Force Raster to load large rasters into memory
-  rasterOptions(chunksize=2e+07,maxmemory=2e+08)
+  raster::rasterOptions(chunksize=2e+07,maxmemory=2e+08)
   
   ## Set the calibration period
   # Here, we use a 60 year period ending at 1983 
@@ -33,7 +34,7 @@ testthat::test_that("The Daymet tiles are available at the correct URL", {
                                chronologies = itrdb,
                                calibration.years = calibration.years,
                                prediction.years=prediction.years,
-                               out.dir=".",
+                               out.dir="./",
                                meanVar="chained",
                                floor=0,
                                ceiling=NULL,
@@ -48,10 +49,7 @@ testthat::test_that("The Daymet tiles are available at the correct URL", {
   
   testthat::expect_is(mvnp_recon$recon, "RasterBrick")
   
-  ## Some plots...
-  # Mean landscape through time
-  plot(mean(mvnp_recon$recon))
-  
   unlink("mvnp_prism.models.rds")
   unlink("mvnp_prism.recon.tif")
+  unlink("mvnp_prism.carscores.Rds")
 })

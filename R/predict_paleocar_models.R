@@ -25,10 +25,12 @@
 #'
 #' @param models A PaleoCAR simple model, as returned from \code{\link{paleocar_models}}.
 #' @param meanVarMatch Whether or not to perform mean-variance matching.
-#' @param prediction.years The set of years over which to generate a reconstructions. Optional.
+#' @param years The set of years over which to generate a reconstructions. Optional.
 #' @return A numeric vector containing the predictions for each year.
 #' @export
-predict_paleocar_models <- function(models, meanVarMatch = TRUE, years=NULL){
+predict_paleocar_models <- function(models,
+                                    meanVarMatch = TRUE,
+                                    years=NULL){
   if(is.null(years)) years <- as.numeric(rownames(models[['reconstruction.matrix']]))
   
   if(!all(years %in% as.numeric(row.names(models[['reconstruction.matrix']])))){

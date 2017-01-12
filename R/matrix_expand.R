@@ -7,7 +7,7 @@
 #' @param the.matrix A numeric matrix.
 #' @param new.rows A character vector of row names, 
 #' of which a subset whould be the row names of \code{the.matrix}.
-#' @import zoo
+#' @importFrom zoo na.locf
 #' @return A numeric matrix.
 matrix_expand <- function(the.matrix, new.rows){
   the.matrix <- data.matrix(the.matrix)

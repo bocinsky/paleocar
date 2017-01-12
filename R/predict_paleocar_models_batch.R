@@ -1,3 +1,4 @@
+globalVariables(c("end.year","coefs"))
 #' Get a RasterBrick reconstruction from a PaleoCAR batch model
 #'
 #' This generates a reconstruction RasterBrick from a PaleoCAR batch model.
@@ -26,8 +27,6 @@
 #' @param models A PaleoCAR batch model, as returned from \code{\link{paleocar_models_batch}}.
 #' @param meanVar A character string indicating the type of mean-variance matching to perform: either "none" (default), "calibration", or "chained".
 #' @param prediction.years The set of years over which to generate reconstruction rasters. Optional.
-#' @import raster
-#' @import data.table
 #' @return A RasterBrick containing the predictions for each year.
 #' @export
 predict_paleocar_models_batch <- function(models, meanVar = "none", prediction.years=NULL){
@@ -69,7 +68,7 @@ predict_paleocar_models_batch <- function(models, meanVar = "none", prediction.y
       pivot <- which(sapply(spans,function(span){all(calib.years %in% span)}))
       
       if(pivot>1){
-        available.below <- apply(this.models[1:(pivot-1),.(end.year,coefs)],1,function(d){
+        available.below <- apply(this.models[1:(pivot-1),list(end.year,coefs)],1,function(d){
           out <- prediction.years[which(rowSums(!is.na(newx[,names(d$coefs),with=F]))==length(names(d$coefs)))]
           out <- out[out>d[1]]
           out.rle <- rle(diff(out))
@@ -82,7 +81,7 @@ predict_paleocar_models_batch <- function(models, meanVar = "none", prediction.y
       }else available.below <- NULL
       
       if(length(spans)>pivot){
-        available.above <- apply(this.models[(pivot+1):nrow(this.models),.(year,coefs)],1,function(d){
+        available.above <- apply(this.models[(pivot+1):nrow(this.models),list(year,coefs)],1,function(d){
           out <- which(rowSums(!is.na(newx[,names(d$coefs),with=F]))==length(names(d$coefs)))
           out <- out[out<d[1]]
           out.rle <- rle(diff(out))

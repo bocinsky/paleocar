@@ -10,11 +10,11 @@
 #' @param k Numeric, the penalty per parameter to be used; the default k = 2 is the classical AIC.
 #' @return A list of length 2 giving
 #' \itemize{
-#'   \item{\code{df}  The ‘equivalent degrees of freedom’ for the fitted model \code{fit}.}
+#'   \item{\code{df}  The 'equivalent degrees of freedom' for the fitted model \code{fit}.}
 #'   \item{\code{AIC}  A vector of the (generalized) Akaike Information Criterion for the fits.}
 #' }
 #' @importFrom stats complete.cases deviance
-AIC_mlm <- function(fit, scale = 0, k = 2, ...){
+AIC_mlm <- function(fit, scale = 0, k = 2){
   n <- nrow(fit$residuals)
   edf <- n - fit$df.residual
   RSS <- stats::deviance(fit)

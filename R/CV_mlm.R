@@ -6,9 +6,9 @@
 #' the corrected Akaike's Information Criterion.
 #'
 #' @param obj An object of class mlm or lm.
-#' @import forecast
 #' @return A matrix of of CV and AICc values for each model.
 #' @importFrom stats hatvalues
+#' @importFrom forecast CV
 CV_mlm <- function (obj) 
 {
   if(class(obj)[[1]]=="lm"){

@@ -1,3 +1,4 @@
+globalVariables(c("AICc"))
 #' Fit PaleoCAR models to a single predictand
 #'
 #' This is the primary function for fitting PaleoCAR models to a single predictand using
@@ -6,14 +7,14 @@
 #' linear model using the \code{\link{lm}} function. Model selection is performed by minizing corrected AIC.
 #' This occurs for every unique set of available predictors through time.
 #' 
-#' See \code{\link{paleoCAR_models_batch}} for a batch algorithm that is more efficient (though more 
+#' See \code{\link{paleocar_models_batch}} for a batch algorithm that is more efficient (though more 
 #' computationally complicated) than the algorithm provided here.
 #'
 #' @param chronologies A matrix of tree ring chronologies, indexed annually.
 #' Each chronology is a column. The first column must be labeled "YEAR" and is the calendar year.
 #' @param predictand A numeric vector of the predictand (response) variable.
 #' @param calibration.years An integer vector of years corresponding to the layers in the \code{predictands} brick.
-#' @param prediction.years An optional integer vector of years for the reconstruction.
+#' @param reconstruction.years An optional integer vector of years for the reconstruction.
 #' If missing, defaults to the total years present in \code{chronologies}.
 #' @param verbose Logical, display status messages during run.
 #' @return A named list containing
@@ -25,7 +26,11 @@
 #' }
 #' @export
 #' @importFrom stats lm
-paleocar_models <- function(chronologies, predictand, calibration.years, reconstruction.years=NULL, verbose=F){
+paleocar_models <- function(chronologies,
+                            predictand,
+                            calibration.years,
+                            reconstruction.years=NULL,
+                            verbose=F){
   predictor.matrix <- get_predictor_matrix(chronologies, calibration.years)
   
   maxPreds <- nrow(predictor.matrix)-5
@@ -107,8 +112,8 @@ paleocar_models <- function(chronologies, predictand, calibration.years, reconst
   data.table::setkey(all.lms.below,NULL)
   data.table::setkey(all.lms.above,NULL)
   
-  below.remove <- all.lms.below[,.(make_monotonic(AICc),year)]
-  above.remove <- all.lms.above[,.(make_monotonic(AICc),year)]
+  below.remove <- all.lms.below[,list(make_monotonic(AICc),year)]
+  above.remove <- all.lms.above[,list(make_monotonic(AICc),year)]
   
   all.lms.below <- all.lms.below[below.remove$V1]
   all.lms.above <- all.lms.above[above.remove$V1]

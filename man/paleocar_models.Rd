@@ -15,10 +15,10 @@ Each chronology is a column. The first column must be labeled "YEAR" and is the 
 
 \item{calibration.years}{An integer vector of years corresponding to the layers in the \code{predictands} brick.}
 
-\item{verbose}{Logical, display status messages during run.}
-
-\item{prediction.years}{An optional integer vector of years for the reconstruction.
+\item{reconstruction.years}{An optional integer vector of years for the reconstruction.
 If missing, defaults to the total years present in \code{chronologies}.}
+
+\item{verbose}{Logical, display status messages during run.}
 }
 \value{
 A named list containing
@@ -37,7 +37,7 @@ linear model using the \code{\link{lm}} function. Model selection is performed b
 This occurs for every unique set of available predictors through time.
 }
 \details{
-See \code{\link{paleoCAR_models_batch}} for a batch algorithm that is more efficient (though more 
+See \code{\link{paleocar_models_batch}} for a batch algorithm that is more efficient (though more 
 computationally complicated) than the algorithm provided here.
 }
 

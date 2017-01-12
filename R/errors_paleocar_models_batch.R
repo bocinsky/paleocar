@@ -1,3 +1,4 @@
+globalVariables(c("year","endYear", "cell"))
 #' Get a RasterBrick of reconstruction LOOCV errors
 #'
 #' This extracts the leave-one-out cross-validation (LOOCV) error information 
@@ -9,8 +10,8 @@
 #'
 #' @param models A PaleoCAR batch model, as returned from \link{paleocar_models_batch}.
 #' @param prediction.years The set of years over which to generate error rasters.
-#' @import raster
 #' @return A RasterBrick containing the LOOCV statistics per year.
+#' @importFrom data.table :=
 errors_paleocar_models_batch <- function(models, prediction.years=NULL){
   if(is.null(prediction.years)) prediction.years <- as.numeric(rownames(models[['reconstruction.matrix']]))
   

@@ -41,8 +41,6 @@ If missing, defaults to the total years present in \code{chronologies}.}
 \item{generate.reconstruction}{Logical, should the reconstruction be generated (as opposed to only the models)?}
 
 \item{return.objects}{Logical, should objects be returned (as opposed to only writing them to disk)?}
-
-\item{chained.meanVar}{Logical, indicating whether to chain mean-variance matching if performed. See \code{\link{predict_paleocar_models_batch}}.}
 }
 \value{
 A named list containing

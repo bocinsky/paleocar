@@ -7,7 +7,7 @@
 get_predlist(reconstruction.matrix)
 }
 \arguments{
-\item{predictor.matrix}{A matrix of predictors for a reconstruction.
+\item{reconstruction.matrix}{A matrix of predictors for a reconstruction.
 Columns are predictors, rows are years.}
 }
 \value{

@@ -40,6 +40,20 @@ itrdb <- FedData::get_itrdb(template=treePoly, label="MVNP_PLUS_10DEG", raw.dir 
 
 unlink("./data-raw/ITRDB", recursive = T)
 
+Encoding(levels(itrdb$metadata$NAME)) <- "latin1"
+levels(itrdb$metadata$NAME) <- iconv(
+  levels(itrdb$metadata$NAME), 
+  "latin1", 
+  "UTF-8"
+)
+
+Encoding(levels(itrdb$metadata$CONTRIBUTOR)) <- "latin1"
+levels(itrdb$metadata$CONTRIBUTOR) <- iconv(
+  levels(itrdb$metadata$CONTRIBUTOR), 
+  "latin1", 
+  "UTF-8"
+)
+
 devtools::use_data(itrdb, overwrite = TRUE)
 
 

@@ -3,7 +3,7 @@
 #' This creates a list of available predictors along the years in 
 #' the reconstruction matrix.
 #'
-#' @param predictor.matrix A matrix of predictors for a reconstruction.
+#' @param reconstruction.matrix A matrix of predictors for a reconstruction.
 #' Columns are predictors, rows are years.
 #' @return A matrix of unique combinations of predictors through time.
 get_predlist <- function(reconstruction.matrix){

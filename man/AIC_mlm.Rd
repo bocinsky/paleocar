@@ -4,7 +4,7 @@
 \alias{AIC_mlm}
 \title{Computation of AIC for mlm objects}
 \usage{
-AIC_mlm(fit, scale = 0, k = 2, ...)
+AIC_mlm(fit, scale = 0, k = 2)
 }
 \arguments{
 \item{fit}{An object of class mlm.}
@@ -18,7 +18,7 @@ estimated by maximum likelihood.}
 \value{
 A list of length 2 giving
 \itemize{
-  \item{\code{df}  The ‘equivalent degrees of freedom’ for the fitted model \code{fit}.}
+  \item{\code{df}  The 'equivalent degrees of freedom' for the fitted model \code{fit}.}
   \item{\code{AIC}  A vector of the (generalized) Akaike Information Criterion for the fits.}
 }
 }
