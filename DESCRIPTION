@@ -2,7 +2,7 @@ Package: paleocar
 Type: Package
 Title: Paleoclimate Reconstruction from Tree Rings using Correlation Adjusted
     corRelation
-Version: 3.2
+Version: 3.2.0
 Date: 2017-1-11
 Author: R. Kyle Bocinsky <bocinsky@gmail.com>
 Maintainer: R. Kyle Bocinsky <bocinsky@gmail.com>
@@ -13,7 +13,7 @@ Description: Functions to perform spatio-temporal paleoclimate reconstruction
     A 2,000-year reconstruction of the rain-fed maize agricultural niche in the US Southwest. 
     *Nature Communications*, 5:5618. The primary difference is that here model selection is performed
     by minimizing the corrected Akaike's Information Criterion.
-License: GPL-3
+License: MIT + file LICENSE
 Depends:  R (>= 3.1)
 Imports:  FedData,
           data.table,
