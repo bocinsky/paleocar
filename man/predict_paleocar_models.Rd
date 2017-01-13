@@ -2,22 +2,29 @@
 % Please edit documentation in R/predict_paleocar_models.R
 \name{predict_paleocar_models}
 \alias{predict_paleocar_models}
-\title{Get a reconstruction from a PaleoCAR simple model}
+\title{Get a RasterBrick reconstruction from a PaleoCAR batch model}
 \usage{
-predict_paleocar_models(models, meanVarMatch = TRUE, years = NULL)
+predict_paleocar_models(models, meanVar = "chained", floor = NULL,
+  ceiling = NULL, prediction.years = NULL, ...)
 }
 \arguments{
-\item{models}{A PaleoCAR simple model, as returned from \code{\link{paleocar_models}}.}
+\item{models}{A PaleoCAR batch model, as returned from \code{\link{paleocar_models}}.}
 
-\item{meanVarMatch}{Whether or not to perform mean-variance matching.}
+\item{meanVar}{A character string indicating the type of mean-variance matching to perform: either "none" (default), "calibration", or "chained".}
 
-\item{years}{The set of years over which to generate a reconstructions. Optional.}
+\item{floor}{Numeric, an optional lower bound for reconstructed values, such as \code{0} for precipitation reconstructions.}
+
+\item{ceiling}{Numeric, an optional upper bound for reconstructed values.}
+
+\item{prediction.years}{The set of years over which to generate reconstruction rasters. Optional.}
+
+\item{...}{Further arguments to be passed to other functions.}
 }
 \value{
-A numeric vector containing the predictions for each year.
+A RasterBrick containing the predictions for each year.
 }
 \description{
-This generates a reconstruction vector from a PaleoCAR simple model.
+This generates a reconstruction RasterBrick from a PaleoCAR batch model.
 }
 \details{
 Optionally, mean-variance matching (scaling/transformation) can be performed.
@@ -38,7 +45,7 @@ and, \bold{\eqn{\beta}} = \eqn{\mu}(\bold{\emph{X_c}})-[\eqn{\alpha} x \eqn{\mu}
 
 or a transformation to the mean of the calibration vector corrected by the 
 scaled mean of the reconstructed data over the calibration period.
-Thus, every reconstruction through time for will have the same mean and 
+Thus, every reconstruction for a particular cell will have the same mean and 
 variance over the calibration period.
 }
 

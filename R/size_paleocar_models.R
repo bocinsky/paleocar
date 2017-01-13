@@ -5,10 +5,13 @@ globalVariables(c("size"))
 #' from a set of PaleoCAR models and represents them as a RasterBrick with
 #' layers for each reconstructed year.
 #'
-#' @param models A PaleoCAR batch model, as returned from \link{paleocar_models_batch}.
+#' @param models A PaleoCAR batch model, as returned from \link{paleocar_models}.
 #' @param prediction.years The set of years over which to generate model size rasters.
+#' @param ... Further arguments to be passed to other functions.
 #' @return A RasterBrick containing the model sizes per year.
-size_paleocar_models_batch <- function(models, prediction.years=NULL){
+size_paleocar_models <- function(models,
+                                 prediction.years=NULL,
+                                 ...){
   if(is.null(prediction.years)) prediction.years <- as.numeric(rownames(models[['reconstruction.matrix']]))
   
   if(!all(prediction.years %in% as.numeric(row.names(models[['reconstruction.matrix']])))){

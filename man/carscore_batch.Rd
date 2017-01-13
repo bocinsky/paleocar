@@ -12,7 +12,7 @@ carscore_batch(predictand.matrix, predictor.matrix)
 \item{predictor.matrix}{A matrix of predictors. Columns are predictors, number of rows must equal number of layers in \code{predictand.matrix}.}
 }
 \value{
-A matrix of carscores.
+A list of carscores, one for each columns in the predictand.matrix.
 }
 \description{
 Takes a matrix of predictands and a matrix of predictors (each predictand/predictor gets a column)

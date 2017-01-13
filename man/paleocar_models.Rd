@@ -2,42 +2,49 @@
 % Please edit documentation in R/paleocar_models.R
 \name{paleocar_models}
 \alias{paleocar_models}
-\title{Fit PaleoCAR models to a single predictand}
+\title{Fit PaleoCAR models to a (potentially large) set of predictands}
 \usage{
-paleocar_models(chronologies, predictand, calibration.years,
-  reconstruction.years = NULL, verbose = F)
+paleocar_models(chronologies, predictands, calibration.years,
+  prediction.years = NULL, min.width = NULL, verbose = F, ...)
 }
 \arguments{
 \item{chronologies}{A matrix of tree ring chronologies, indexed annually.
 Each chronology is a column. The first column must be labeled "YEAR" and is the calendar year.}
 
-\item{predictand}{A numeric vector of the predictand (response) variable.}
+\item{predictands}{A RasterBrick, RasterStack, matrix, or vector of the numeric predictand (response) variable.}
 
 \item{calibration.years}{An integer vector of years corresponding to the layers in the \code{predictands} brick.}
 
-\item{reconstruction.years}{An optional integer vector of years for the reconstruction.
+\item{prediction.years}{An optional integer vector of years for the reconstruction.
 If missing, defaults to the total years present in \code{chronologies}.}
 
+\item{min.width}{integer, indicating the minimum number of tree-ring samples allowed for that year of a chronology to be valid.}
+
 \item{verbose}{Logical, display status messages during run.}
+
+\item{...}{Further arguments to be passed to other functions.}
 }
 \value{
 A named list containing
 \itemize{
   \item{\code{models}  A \code{\link{data.table}} giving the fitted coefficients, LOOCV errors, and AICc values through time for each predictand.}
-  \item{\code{predictand}  A numeric vector of the predictand, as provided.}
+  \item{\code{predictands}  A vector, matrix, or RasterBrick of predictands, as provided.}
   \item{\code{predictor.matrix}  A matrix of predictors for calibration; \code{chronologies} cropped to \code{calibration.years}.}
   \item{\code{reconstruction.matrix}  A matrix of predictors for reconstruction; \code{chronologies} cropped to \code{prediction.years}, or all of \code{chronologies} if \code{prediction.years==NULL}.}
+  \item{\code{carscores}  A list of carscore matrices, one for each predictand.}
 }
 }
 \description{
-This is the primary function for fitting PaleoCAR models to a single predictand using
-a uniform set of predictors (tree-ring chronologies). \code{\link{carscore}s} are calculated for 
+This is the primary function for fitting PaleoCAR models to a large set of predictands using
+a uniform set of predictors (tree-ring chronologies). For each predictand, \code{\link{carscore}s} are calculated for 
 each predictor, and models are calculated by adding predictors stepwise to an ordinary least-squares
-linear model using the \code{\link{lm}} function. Model selection is performed by minizing corrected AIC.
+linear model using the \code{\link{lm}} function. Model selection is performed by minimizing corrected AIC.
 This occurs for every unique set of available predictors through time.
 }
 \details{
-See \code{\link{paleocar_models_batch}} for a batch algorithm that is more efficient (though more 
-computationally complicated) than the algorithm provided here.
+See \code{\link{paleocar_models}} for a simplified algorithm that fits a PaleoCAR model for 
+a single predictand. The batch algorithm gains efficiencies by minimizing the number of unique model calculations
+(using multiple-response models) and by halting calculations for individual predictands once they
+stabilize.
 }
 

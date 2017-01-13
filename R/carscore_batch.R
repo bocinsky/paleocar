@@ -6,7 +6,7 @@
 #' @param predictand.matrix A matrix of predictand (response variables). Columns are predictands
 #' @param predictor.matrix A matrix of predictors. Columns are predictors, number of rows must equal number of layers in \code{predictand.matrix}.
 #' @importFrom care carscore
-#' @return A matrix of carscores.
+#' @return A list of carscores, one for each columns in the predictand.matrix.
 carscore_batch <- function(predictand.matrix, predictor.matrix){
   
   carscores <- apply(predictand.matrix,2,function(predictands){

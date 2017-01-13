@@ -74,25 +74,132 @@ data(mvnp_prism)
 ```
 
 #### Run `paleocar`
+`paleocar` can be run for either single location given by a vector of annualized climate data, a matrix of locations, or over gridded climate data such as PRISM in raster format. There are three primary functions:
+
+ - `paleocar_models()` calculates the CAR-ranked linear models for all reconstructions
+ - `predict_paleocar_models()` generates climate predictions over a specified prediction period, and
+ - `uncertainty_paleocar_models()` generates an estimate of model uncertainty over a specified prediction period.
+ 
+Finally, the `paleocar()` method is a convenience wrapper that runs all three of these functions and returns a list with their output. See the documentation for each function for details.
+
+##### `paleocar` reconstruction for a single location
+`paleocar` may be run for a single location by providing a vector of annualized values to be reconstructed. Simply provide a numeric vector the same length as your calibration years as the `predictands` parameter.
+
 ```r
-mvnp_recon <- paleocar_batch(predictands = mvnp_prism,
+# Extract a vector of annualized climate data (the first cell in the raster)
+mvnp_prism.vector <- mvnp_prism[1][1,]
+
+test.vector <- paleocar_models(predictands = mvnp_prism.vector,
+                              chronologies = itrdb,
+                              calibration.years = 1924:1983,
+                              prediction.years = 1:2000,
+                              verbose = T)
+
+# Generate predictions and uncertainty                              
+predict_paleocar_models(models = test.vector,
+                          meanVar = "chained",
+                          prediction.years = 600:1300)
+uncertainty_paleocar_models(test.vector,
+                          prediction.years = 600:1300)
+```
+
+
+##### `paleocar` reconstruction for multiple locations using the same set of predictors (in this case, tree-ring chronologies)
+Running `paleocar` on a matrix of locations (`predictands`) will generate reconstructions that select from
+the same set of predictors (`chronologies`). The matrix must be formatted such that each location is in a column, and each row is a year of data. Note that the number of rows of the matrix must be the same as the
+number of years provided to `calibration.years`.
+
+```r
+# Extract a matrix of annualized climate data (all cells in the raster)
+mvnp_prism.matrix <- raster::as.matrix(mvnp_prism) %>% t()
+
+# Print to show format
+mvnp_prism.matrix %>% tibble::as_tibble()
+
+test.matrix <- paleocar_models(predictands = mvnp_prism.matrix,
+                                chronologies = itrdb,
+                                calibration.years = 1924:1983,
+                                prediction.years = 1:1985,
+                                verbose = T)
+
+# Generate predictions and uncertainty
+predict_paleocar_models(models = test.matrix,
+                          meanVar = "chained",
+                          prediction.years = 600:1300)
+uncertainty_paleocar_models(models = test.matrix,
+                          prediction.years = 600:1300)
+```
+
+##### `paleocar` reconstruction over a grid
+Paleocar can also be performed over a gridded climate dataset such as PRISM, so long as it is a `RasterStack` or `RasterBrick` as defined in the [`raster` package for *R*](https://CRAN.R-project.org/package=raster). Results will be returned in `RasterBrick` format.
+
+```r
+# Print to show format
+mvnp_prism
+
+test.raster <- paleocar_models(predictands = mvnp_prism,
+                              chronologies = itrdb,
+                              calibration.years = 1924:1983,
+                              prediction.years = 1:2000,
+                              verbose = T)
+
+# Generate predictions and errors
+test.raster.predictions <- predict_paleocar_models(models = test.raster,
+                          meanVar = "chained",
+                          prediction.years = 600:1300)
+test.raster.uncertainty <- uncertainty_paleocar_models(models = test.raster,
+                          prediction.years = 600:1300)
+                          
+# Plot the mean predictions and uncertainty
+test.raster.predictions %>% raster::mean() %>% raster::plot()
+test.raster.uncertainty %>% raster::mean() %>% raster::plot()
+
+```
+
+##### `paleocar()` convenience wrapper
+The `paleocar()` convenience wrapper returns a list containing the `models`, `reconstructions`, and `uncertainty`. The `paleocar()` method also automatically saves the output of `predict_paleocar_models()` and `errors_paleocar_models()`. Pass variables through this function to other ones (e.g., `meanVar = "chained"`).
+
+```r
+# Generate models and perform the reconstruction and error predictions.
+mvnp_recon <- paleocar(predictands = mvnp_prism,
                               label = "mvnp_prism",
                               chronologies = itrdb,
-                              calibration.years = calibration.years,
-                              prediction.years=prediction.years,
-                              out.dir="./",
-                              meanVar="chained",
-                              floor=0,
-                              ceiling=NULL,
-                              asInt=T,
-                              force.redo=T,
-                              verbose=T)
+                              calibration.years = 1924:1983,
+                              prediction.years = 1:2000,
+                              out.dir = "./",
+                              meanVar = "none",
+                              floor = 0,
+                              ceiling = NULL,
+                              force.redo = T,
+                              verbose = T)
+
+# Examine the structure of the output
+str(mvnp_recon, max.level = 2)
+
+```
+
+You can quickly load a prior reconstruction by setting `force.redo = FALSE`:
+
+```r
+# Generate models and perform the reconstruction and error predictions.
+mvnp_recon <- paleocar(predictands = mvnp_prism,
+                              label = "mvnp_prism",
+                              chronologies = itrdb,
+                              calibration.years = 1924:1983,
+                              prediction.years = 1:2000,
+                              out.dir = "./",
+                              meanVar = "none",
+                              floor = 0,
+                              ceiling = NULL,
+                              force.redo = F,
+                              verbose = T)
+
 ```
 
 #### Plot results
 ```r
-mvnp_recon$recon %>%
-  mean() %>%
+mvnp_recon$predictions %>%
+  raster::mean() %>%
   raster::plot()
 ```
   

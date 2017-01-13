@@ -2,7 +2,7 @@ Package: paleocar
 Type: Package
 Title: Paleoclimate Reconstruction from Tree Rings using Correlation Adjusted
     corRelation
-Version: 3.2.0
+Version: 3.3.0
 Date: 2017-1-11
 Author: R. Kyle Bocinsky <bocinsky@gmail.com>
 Maintainer: R. Kyle Bocinsky <bocinsky@gmail.com>
@@ -27,7 +27,8 @@ Imports:  FedData,
           foreach,
           sp,
           httr,
-          magrittr
+          magrittr,
+          readr
 LazyData: true
 RoxygenNote: 5.0.1
 Suggests: testthat
