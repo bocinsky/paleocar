@@ -3,3 +3,5 @@
 ^.*\.travis.yml$
 ^\.travis\.yml$
 ^data-raw$
+^README\.Rmd$
+^README-.*\.png$

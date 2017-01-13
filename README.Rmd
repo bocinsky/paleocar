@@ -1,3 +1,6 @@
+---
+output: github_document
+---
 
 paleocar
 ========
@@ -19,32 +22,25 @@ Bocinsky, R. K., Rush, J., Kintigh, K. W., and Kohler, T. A. (2016). Exploration
 This package has been built and tested on a source (Homebrew) install of *R* on macOS 10.12 (Sierra), and has been successfully run on Ubuntu 14.04.5 LTS (Trusty), Ubuntu 16.04.1 LTS (Xenial) and binary installs of *R* on Mac OS 10.12 and Windows 10.
 
 ### Development
-
--   [Kyle Bocinsky](http://bocinsky.io) - Crow Canyon Archaeological Center, Cortez, CO
++ [Kyle Bocinsky](http://bocinsky.io) - Crow Canyon Archaeological Center, Cortez, CO
 
 ### Install `paleocar`
-
--   Development version from GitHub:
-
-    ``` r
-    install.packages("devtools")
-    devtools::install_github("bocinsky/paleocar")
-    library(paleocar)
-    ```
-
--   Linux (Ubuntu 14.04.5 or 16.04.1):
++ Development version from GitHub:
+```r
+install.packages("devtools")
+devtools::install_github("bocinsky/paleocar")
+library(paleocar)
+```
++ Linux (Ubuntu 14.04.5 or 16.04.1):
 
 First, in terminal:
-
-``` bash
+```bash
 sudo add-apt-repository ppa:ubuntugis/ppa -y
 sudo apt-get update -q
 sudo apt-get install libssl-dev libcurl4-openssl-dev netcdf-bin libnetcdf-dev gdal-bin libgdal-dev
 ```
-
 Then, in R:
-
-``` r
+```r
 update.packages("survival")
 install.packages("devtools")
 devtools::install_github("bocinsky/paleocar")
@@ -52,12 +48,10 @@ library(paleocar)
 ```
 
 ### Demonstration
-
 This demo script is available in the `/inst` folder at the location of the installed package.
 
 #### Load `paleocar` and set a working directory
-
-``` r
+```{r, echo = TRUE, eval = FALSE}
 library(paleocar)
 library(magrittr) # The magrittr package enables piping in R.
 
@@ -65,13 +59,12 @@ library(magrittr) # The magrittr package enables piping in R.
 testDir <- "~/paleocar Test"
 # and create it if necessary
 dir.create(testDir, showWarnings=F, recursive=T)
+
 ```
 
 #### Load test datasets
-
 `paleocar` ships with test files defining a study area (Mesa Verde National Park), and pre-extracted data from the International Tree Ring Databank using the [`FedData` package](https://github.com/bocinsky/FedData). See the `data-raw/data.R` script (or the documentation for `FedData`) to learn how to download these data.
-
-``` r
+```{r, echo = TRUE, eval = FALSE}
 # Load spatial polygon for the boundary of Mesa Verde National Park (MVNP) in southwestern Colorado:
 data(mvnp)
 
@@ -80,23 +73,22 @@ data(itrdb)
 
 # Get 1/3 arc-second PRISM gridded data for the MVNP north study area
 data(mvnp_prism)
+
 ```
 
 #### Run `paleocar`
-
 `paleocar` can be run for either single location given by a vector of annualized climate data, a matrix of locations, or over gridded climate data such as PRISM in raster format. There are three primary functions:
 
--   `paleocar_models()` calculates the CAR-ranked linear models for all reconstructions
--   `predict_paleocar_models()` generates climate predictions over a specified prediction period, and
--   `uncertainty_paleocar_models()` generates an estimate of model uncertainty over a specified prediction period.
+- `paleocar_models()` calculates the CAR-ranked linear models for all reconstructions
+- `predict_paleocar_models()` generates climate predictions over a specified prediction period, and
+- `uncertainty_paleocar_models()` generates an estimate of model uncertainty over a specified prediction period.
 
 Finally, the `paleocar()` method is a convenience wrapper that runs all three of these functions and returns a list with their output. See the documentation for each function for details.
 
 ##### `paleocar` reconstruction for a single location
-
 `paleocar` may be run for a single location by providing a vector of annualized values to be reconstructed. Simply provide a numeric vector the same length as your calibration years as the `predictands` parameter.
 
-``` r
+```{r, echo = TRUE, eval = FALSE}
 # Extract a vector of annualized climate data (the first cell in the raster)
 mvnp_prism.vector <- mvnp_prism[1][1,]
 
@@ -114,11 +106,13 @@ uncertainty_paleocar_models(test.vector,
                             prediction.years = 600:1300)
 ```
 
+
 ##### `paleocar` reconstruction for multiple locations using the same set of predictors (in this case, tree-ring chronologies)
+Running `paleocar` on a matrix of locations (`predictands`) will generate reconstructions that select from
+the same set of predictors (`chronologies`). The matrix must be formatted such that each location is in a column, and each row is a year of data. Note that the number of rows of the matrix must be the same as the
+number of years provided to `calibration.years`.
 
-Running `paleocar` on a matrix of locations (`predictands`) will generate reconstructions that select from the same set of predictors (`chronologies`). The matrix must be formatted such that each location is in a column, and each row is a year of data. Note that the number of rows of the matrix must be the same as the number of years provided to `calibration.years`.
-
-``` r
+```{r, echo = TRUE, eval = FALSE}
 # Extract a matrix of annualized climate data (all cells in the raster)
 mvnp_prism.matrix <- mvnp_prism %>%
   raster::as.matrix() %>% 
@@ -143,10 +137,9 @@ uncertainty_paleocar_models(models = test.matrix,
 ```
 
 ##### `paleocar` reconstruction over a grid
-
 Paleocar can also be performed over a gridded climate dataset such as PRISM, so long as it is a `RasterStack` or `RasterBrick` as defined in the [`raster` package for *R*](https://CRAN.R-project.org/package=raster). Results will be returned in `RasterBrick` format.
 
-``` r
+```{r, echo = TRUE, eval = FALSE}
 # Print to show format
 mvnp_prism
 
@@ -171,13 +164,13 @@ test.raster.predictions %>%
 test.raster.uncertainty %>% 
   raster::mean() %>% 
   raster::plot()
+
 ```
 
 ##### `paleocar()` convenience wrapper
-
 The `paleocar()` convenience wrapper returns a list containing the `models`, `reconstructions`, and `uncertainty`. The `paleocar()` method also automatically saves the output of `predict_paleocar_models()` and `errors_paleocar_models()`. Pass variables through this function to other ones (e.g., `meanVar = "chained"`).
 
-``` r
+```{r, echo = TRUE, eval = FALSE}
 # Generate models and perform the reconstruction and error predictions.
 mvnp_recon <- paleocar(predictands = mvnp_prism,
                        label = "mvnp_prism",
@@ -193,11 +186,12 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
 
 # Examine the structure of the output
 str(mvnp_recon, max.level = 2)
+
 ```
 
 You can quickly load a prior reconstruction by setting `force.redo = FALSE`:
 
-``` r
+```{r, echo = TRUE, eval = FALSE}
 # Generate models and perform the reconstruction and error predictions.
 mvnp_recon <- paleocar(predictands = mvnp_prism,
                        label = "mvnp_prism",
@@ -210,12 +204,20 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
                        ceiling = NULL,
                        force.redo = F,
                        verbose = T)
+
 ```
 
 #### Plot results
-
-``` r
+```r
 mvnp_recon$predictions %>%
 raster::mean() %>%
 raster::plot()
+```
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
 ```
