@@ -208,10 +208,11 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
 ```
 
 #### Plot results
-```r
+
+```{r, echo = TRUE, eval = FALSE}
 mvnp_recon$predictions %>%
-raster::mean() %>%
-raster::plot()
+  raster::mean() %>%
+  raster::plot()
 ```
 
 ```{r, echo = FALSE}
