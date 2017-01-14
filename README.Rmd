@@ -6,6 +6,8 @@ paleocar
 ========
 
 [![Build Status](https://api.travis-ci.org/bocinsky/paleocar.png)](https://travis-ci.org/bocinsky/paleocar)
+<!-- [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/paleocar)](https://github.com/metacran/cranlogs.app) -->
+[![cran version](http://www.r-pkg.org/badges/version/paleocar)](https://cran.r-project.org/package=paleocar)
 
 `paleocar` is an *R* package implementing functions to perform spatio-temporal paleoclimate reconstruction from tree-rings using the CAR (Correlation Adjusted corRelation) approach of Zuber and Strimmer as implemented in the [`care` package](https://CRAN.R-project.org/package=care) for *R*. It is optimized for speed and memory use.
 
