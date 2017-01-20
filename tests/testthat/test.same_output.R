@@ -39,6 +39,7 @@ testthat::test_that("Test that the paleocar_models and paleocar_models_simple fu
                   calibration.years = calibration.years,
                   prediction.years = prediction.years)
   
-  testthat::expect_equal(paleocar_models.out,paleocar_models_simple.out)
-
+  testthat::expect_equal(paleocar_models.out,
+                         paleocar_models_simple.out)
+  
 })
