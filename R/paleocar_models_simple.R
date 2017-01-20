@@ -12,9 +12,9 @@ globalVariables(c("AICc"))
 #'
 #' @param chronologies A matrix of tree ring chronologies, indexed annually.
 #' Each chronology is a column. The first column must be labeled "YEAR" and is the calendar year.
-#' @param predictand A numeric vector of the predictand (response) variable.
+#' @param predictands A numeric vector of the predictand (response) variable.
 #' @param calibration.years An integer vector of years corresponding to the layers in the \code{predictands} brick.
-#' @param reconstruction.years An optional integer vector of years for the reconstruction.
+#' @param prediction.years An optional integer vector of years for the reconstruction.
 #' If missing, defaults to the total years present in \code{chronologies}.
 #' @param verbose Logical, display status messages during run.
 #' @return A named list containing
@@ -25,16 +25,17 @@ globalVariables(c("AICc"))
 #'   \item{\code{reconstruction.matrix}  A matrix of predictors for reconstruction; \code{chronologies} cropped to \code{prediction.years}, or all of \code{chronologies} if \code{prediction.years==NULL}.}
 #' }
 #' @importFrom stats lm
-paleocar_models_simple <- function(predictand,
+#' @export
+paleocar_models_simple <- function(predictands,
                             chronologies,
                             calibration.years,
-                            reconstruction.years=NULL,
+                            prediction.years=NULL,
                             verbose=F){
   predictor.matrix <- get_predictor_matrix(chronologies, calibration.years)
   
   maxPreds <- nrow(predictor.matrix)-5
   
-  reconstruction.matrix <- get_reconstruction_matrix(chronologies, reconstruction.years)
+  reconstruction.matrix <- get_reconstruction_matrix(chronologies, prediction.years)
   reconstruction.matrix <- reconstruction.matrix[,colnames(predictor.matrix)]
   
   predlist <- get_predlist(reconstruction.matrix)
@@ -42,10 +43,9 @@ paleocar_models_simple <- function(predictand,
   prednums[prednums>maxPreds] <- maxPreds
   
   predyears <- as.numeric(rownames(predlist))
-  hinge.year <- min(predyears[predyears>max(calibration.years)])
+  hinge.year <- min(predyears[predyears > max(calibration.years)], max(calibration.years))
   
-  
-  carscores <- care::carscore(Xtrain=predictor.matrix, Ytrain=predictand, verbose=F)
+  carscores <- care::carscore(Xtrain=predictor.matrix, Ytrain=predictands, verbose=F)
   carscores.ranks <- rank(1-(carscores^2))
   names(carscores.ranks) <- colnames(predictor.matrix)
   carscores <- carscores.ranks
@@ -74,18 +74,49 @@ paleocar_models_simple <- function(predictand,
   new.t <- Sys.time()
   all.lms <- lapply(models,function(year.models){
     year.lms <- data.table::rbindlist(apply(year.models,1,function(this.model){
-      model.lm <- stats::lm(predictand~predictor.matrix[,this.model,drop=F])
+      model.lm <- stats::lm(predictands~predictor.matrix[,this.model,drop=F])
       # Get model errors
-      model.errors <- data.table::data.table(numPred=ncol(predictor.matrix[,this.model,drop=F]),t(CV(model.lm)[c("CV","AICc")]))
+      model.errors <- data.table::data.table(numPreds=ncol(predictor.matrix[,this.model,drop=F]),t(forecast::CV(model.lm)[c("CV","AICc")]))
       
       # Get coefficients
       coefs <- data.table::data.table(t(as.matrix(model.lm$coefficients)))
       data.table::setnames(coefs,c("Intercept",colnames(predictor.matrix[,this.model,drop=F])))
-      coefs[,setdiff(colnames(predictor.matrix),names(coefs)):=NA]
-      data.table::setcolorder(coefs,c("Intercept",colnames(predictor.matrix)))
       
-      out <- cbind(model.errors,coefs)
-      return(out)
+      coefs <- lapply(1:nrow(coefs),function(j){
+        out <- as.numeric(coefs[j])
+        names(out) <- colnames(coefs)
+        return(out)
+      })
+      # names(coefs) <- cells
+      
+      # coefs <- coefs[order(as.integer(names(coefs)))]
+      
+      if(length(coefs)==1){
+        model.errors[,coefs:=list(coefs)]
+      }else{
+        model.errors[,coefs:=coefs]
+      }
+      model.errors[,model:=0]
+      model.errors[,cell:=1]
+      data.table::setcolorder(model.errors,c("cell","model","numPreds","CV","AICc","coefs"))
+      data.table::setkey(model.errors,cell,model)
+      
+      
+      
+      
+      
+      
+      # coefs[,setdiff(colnames(predictor.matrix),names(coefs)):=NA]
+      # data.table::setcolorder(coefs,c("Intercept",colnames(predictor.matrix)))
+      # 
+      # if(length(coefs)==1){
+      #   model.errors[,coefs:=list(coefs)]
+      # }else{
+      #   model.errors[,coefs:=coefs]
+      # }
+      # 
+      # out <- cbind(model.errors,coefs)
+      return(model.errors)
     }))
     
     return(year.lms)
@@ -94,7 +125,16 @@ paleocar_models_simple <- function(predictand,
   all.lms <- lapply(1:length(all.lms),function(i){
     lms <- all.lms[[i]]
     lms[,year:=as.numeric(names(all.lms)[i])]
-    data.table::setcolorder(lms,c('year','numPred','CV','AICc','Intercept',colnames(predictor.matrix)))
+    data.table::setcolorder(lms,c("cell","year","model","numPreds","CV","AICc","coefs"))
+    
+    if(nrow(lms) == 1){
+      lms <- lms
+    }else if(nrow(lms) == 2){
+      lms <- lms[which(lms$AICc == min(lms$AICc)),]
+    }else if(nrow(lms) > 2){
+      lms <- lms[which(sign(diff(lms$AICc)) == 1)[1],]
+    }
+
     return(lms)
   })
   
@@ -120,9 +160,13 @@ paleocar_models_simple <- function(predictand,
   all.lms <- rbind(all.lms.below,all.lms.above)
   rm(all.lms.below,all.lms.above,below.remove,above.remove);gc();gc()
   
-  data.table::setkey(all.lms,year)
+  data.table::setkey(all.lms,cell,year)
   
-  allModels <- list(models=all.lms, predictand=predictand, predictor.matrix=predictor.matrix, reconstruction.matrix=reconstruction.matrix)
+  allModels <- list(models = all.lms,
+                    predictands = predictands,
+                    predictor.matrix = predictor.matrix,
+                    reconstruction.matrix = reconstruction.matrix,
+                    carscores = data.table::data.table(t(carscores)))
     
   return(allModels)
 }

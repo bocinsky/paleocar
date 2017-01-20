@@ -4,18 +4,18 @@
 \alias{paleocar_models_simple}
 \title{Fit PaleoCAR models to a single predictand}
 \usage{
-paleocar_models_simple(predictand, chronologies, calibration.years,
-  reconstruction.years = NULL, verbose = F)
+paleocar_models_simple(predictands, chronologies, calibration.years,
+  prediction.years = NULL, verbose = F)
 }
 \arguments{
-\item{predictand}{A numeric vector of the predictand (response) variable.}
+\item{predictands}{A numeric vector of the predictand (response) variable.}
 
 \item{chronologies}{A matrix of tree ring chronologies, indexed annually.
 Each chronology is a column. The first column must be labeled "YEAR" and is the calendar year.}
 
 \item{calibration.years}{An integer vector of years corresponding to the layers in the \code{predictands} brick.}
 
-\item{reconstruction.years}{An optional integer vector of years for the reconstruction.
+\item{prediction.years}{An optional integer vector of years for the reconstruction.
 If missing, defaults to the total years present in \code{chronologies}.}
 
 \item{verbose}{Logical, display status messages during run.}

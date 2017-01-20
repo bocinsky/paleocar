@@ -3,6 +3,7 @@
 export(get_bocinsky2016)
 export(paleocar)
 export(paleocar_models)
+export(paleocar_models_simple)
 export(predict_paleocar_models)
 export(uncertainty_paleocar_models)
 importFrom(care,carscore)

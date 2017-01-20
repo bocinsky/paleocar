@@ -29,8 +29,6 @@ get_bocinsky2016 <- function(template = NULL,
   
   dir.create(paste0(dir_out,"DATA/"), showWarnings = F, recursive = T)
   
-  # Suppress scientific notation
-  options(scipen=999999)
   # Force Raster to load large rasters into memory
   raster::rasterOptions(chunksize=2e+07,maxmemory=2e+08)
   

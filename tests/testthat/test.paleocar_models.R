@@ -2,8 +2,6 @@ library(raster)
 testthat::context("paleocar tests")
 
 testthat::test_that("Test that the paleocar function works", {
-  # Suppress use of scientific notation
-  options(scipen=999)
   
   # Force Raster to load large rasters into memory
   raster::rasterOptions(chunksize=2e+07,maxmemory=2e+08)

@@ -7,9 +7,6 @@ library(paleocar)
 library(raster)
 library(sp)
 
-# Suppress use of scientific notation
-options(scipen=999)
-
 # Force Raster to load large rasters into memory
 rasterOptions(chunksize=2e+07,maxmemory=2e+08)
 

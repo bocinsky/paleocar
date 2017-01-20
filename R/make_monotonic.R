@@ -12,11 +12,11 @@ make_monotonic <- function(vect,decreasing=T){
   if(length(vect)==1) return(T)
   if(decreasing){
     keep <- c(T,sapply(2:length(vect),function(i){
-      ifelse(all(vect[i] < vect[1:i-1]),T,F)
+      !any(sapply(vect[1:i-1],all.equal,current = vect[i]) == "TRUE") & all(vect[i] < vect[1:i-1])
     }))
   }else{
     keep <- c(T,sapply(2:length(vect),function(i){
-      ifelse(all(vect[i] > vect[1:i-1]),T,F)
+      !any(sapply(vect[1:i-1],all.equal,current = vect[i]) == "TRUE") & all(vect[i] > vect[1:i-1])
     }))
   }
   
