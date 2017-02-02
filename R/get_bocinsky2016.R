@@ -29,6 +29,9 @@ get_bocinsky2016 <- function(template = NULL,
   
   dir.create(paste0(dir_out,"DATA/"), showWarnings = F, recursive = T)
   
+  if(file.exists(paste0(dir_out,"/","niche_",head(years,1),"-",tail(years,1),".tif")))
+    return(brick(paste0(dir_out,"/","niche_",head(years,1),"-",tail(years,1),".tif")))
+  
   # Force Raster to load large rasters into memory
   raster::rasterOptions(chunksize=2e+07,maxmemory=2e+08)
   
@@ -65,7 +68,10 @@ get_bocinsky2016 <- function(template = NULL,
     
     if(file.exists(paste0(dir_out,"/",type,"_niche_",head(years,1),"-",tail(years,1),".tif"))) return(NA)
     
-    system(paste0("gdal_merge.py -ot UInt16 -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -o ",paste0(dir_out,"/DATA/",type,"_merged.tif")," ", paste0("./OUTPUT/DATA/",grep(type,files,value = T),collapse=" ")))
+    system(paste0("gdal_merge.py -ot UInt16 -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -o ",
+                  paste0(dir_out,"/DATA/",type,"_merged.tif"),
+                  " ",
+                  paste0(dir_out,"/DATA/",grep(type,files,value = T),collapse=" ")))
     
     tile_brick <- raster::brick(paste0(dir_out,"/DATA/",type,"_merged.tif"))
     
