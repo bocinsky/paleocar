@@ -48,4 +48,3 @@ scaled mean of the reconstructed data over the calibration period.
 Thus, every reconstruction for a particular cell will have the same mean and 
 variance over the calibration period.
 }
-

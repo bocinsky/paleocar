@@ -18,4 +18,3 @@ multi-predictand linear models (objects of class mlm). Specifically, it calculat
 the leave-one-out cross validataion statistic (also known as the PRESS statistic) and
 the corrected Akaike's Information Criterion.
 }
-

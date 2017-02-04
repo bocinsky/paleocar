@@ -20,4 +20,3 @@ Given a matrix \code{m} and a vector \code{v} of new row IDs, returns a new matr
 with \code{length(v)} rows, and fills the empty rows with data from the nearest preceding row
 containing data.
 }
-

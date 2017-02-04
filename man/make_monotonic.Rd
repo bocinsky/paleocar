@@ -19,4 +19,3 @@ Given a vector \code{v} of length greater than 1, returns a logical vector
 the same length as \code{v} indicating whether each element of \code{v} is
 greater (or less-than, if \code{decreasing==TRUE}) than all previous elements.
 }
-

@@ -22,4 +22,3 @@ A matrix of predictors for a reconstruction.
 \description{
 This subsets a chronologies matrix to a set of reconstruction years.
 }
-

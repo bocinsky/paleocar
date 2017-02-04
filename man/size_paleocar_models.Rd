@@ -21,4 +21,3 @@ This extracts the model size information
 from a set of PaleoCAR models and represents them as a RasterBrick with
 layers for each reconstructed year.
 }
-

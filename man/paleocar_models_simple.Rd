@@ -40,4 +40,3 @@ This occurs for every unique set of available predictors through time.
 See \code{\link{paleocar_models}} for a batch algorithm that is more efficient (though more 
 computationally complicated) than the algorithm provided here.
 }
-

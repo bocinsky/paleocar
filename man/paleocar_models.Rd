@@ -47,4 +47,3 @@ a single predictand. The batch algorithm gains efficiencies by minimizing the nu
 (using multiple-response models) and by halting calculations for individual predictands once they
 stabilize.
 }
-

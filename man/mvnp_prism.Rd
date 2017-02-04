@@ -16,4 +16,3 @@ A dataset containing the water-year (October--September) gridded precipitation e
 Mesa Verde National Park derived from the 800m PRISM dataset.
 }
 \keyword{datasets}
-

@@ -26,4 +26,3 @@ A list of length 2 giving
 Extends the \code{extractAIC} method from the \pkg{stats} package to handle 
 multi-predictand linear models (objects of class mlm).
 }
-

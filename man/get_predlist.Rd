@@ -17,4 +17,3 @@ A matrix of unique combinations of predictors through time.
 This creates a list of available predictors along the years in 
 the reconstruction matrix.
 }
-

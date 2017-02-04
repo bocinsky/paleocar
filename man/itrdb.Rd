@@ -25,4 +25,3 @@ Mesa Verde National Park.
 These data were extracted from the ITRDB using the \code{FedData::get_itrdb()} function.
 }
 \keyword{datasets}
-

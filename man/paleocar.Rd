@@ -50,4 +50,3 @@ processing predictands held in a RasterBrick. Additionally, it allows for the sp
 a \code{floor} and/or \code{ceiling} corrections for a reconstruction (e.g., of precipitation).
 It returns a list containing the models, predictions, and cross-validated uncertainty estimates.
 }
-

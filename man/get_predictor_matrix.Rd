@@ -20,4 +20,3 @@ A matrix of predictors for a calibration
 \description{
 This subsets a chronologies matrix to a set of calibration years.
 }
-

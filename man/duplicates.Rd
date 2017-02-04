@@ -18,4 +18,3 @@ This is a convenient function that removes the duplicated entries (rows)
 in a matrix, but keeps a map of which of the original indices 
 match the duplicates.
 }
-

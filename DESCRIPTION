@@ -14,8 +14,8 @@ Description: Functions to perform spatio-temporal paleoclimate reconstruction
     *Nature Communications*, 5:5618. The primary difference is that here model selection is performed
     by minimizing the corrected Akaike's Information Criterion.
 License: MIT + file LICENSE
-Depends:  R (>= 3.1)
-Imports:  FedData,
+Depends: R (>= 3.1)
+Imports: FedData,
           data.table,
           care,
           forecast,
@@ -30,5 +30,5 @@ Imports:  FedData,
           magrittr,
           readr
 LazyData: true
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.0
 Suggests: testthat

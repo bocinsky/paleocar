@@ -24,4 +24,3 @@ squared errors for the model over the calibration period. This method returns th
 by dividing the LOOCV statistic by the number of predictand observations, and then taking the square root.
 Resulting uncertainty is delivered in the units of the predictand.
 }
-

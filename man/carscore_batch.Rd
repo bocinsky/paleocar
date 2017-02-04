@@ -18,4 +18,3 @@ A list of carscores, one for each columns in the predictand.matrix.
 Takes a matrix of predictands and a matrix of predictors (each predictand/predictor gets a column)
 and returns a list of CAR scores, one for each columns in the predictand.matrix.
 }
-

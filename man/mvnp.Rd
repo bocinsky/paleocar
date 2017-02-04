@@ -16,4 +16,3 @@ A dataset containing the spatial polygon defining the boundary
 of Mesa Verde National Park in southwestern Colorado.
 }
 \keyword{datasets}
-

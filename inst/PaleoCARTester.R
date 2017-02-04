@@ -76,7 +76,13 @@ plot(y=cellStats(mvnp_recon$recon,mean),x=as.numeric(gsub("X","",names(mvnp_reco
 
 
 
+hopi_study_area <- raster::extent(-111.5,-109.75, 35.25, 36.75) %>%
+  FedData::polygon_from_extent("+proj=longlat")
 
+bocinsky_et_al_2016 <- paleocar::get_bocinsky2016(template = hopi_study_area,
+                                                  label = "hopi_study_area",
+                                                  raw.dir = "./OUTPUT/DATA/RAW/PALEOCAR/",
+                                                  extraction.dir = "./OUTPUT/DATA/EXTRACTIONS/PALEOCAR/")
 
 
 
