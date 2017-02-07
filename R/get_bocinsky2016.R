@@ -38,7 +38,7 @@ get_bocinsky2016 <- function(template = NULL,
   dir.create(extraction.dir, showWarnings = FALSE, recursive = TRUE)
   
   if(!force.redo & file.exists(paste0(extraction.dir,"/","niche_",head(years,1),"-",tail(years,1),".tif")))
-    return(brick(paste0(extraction.dir,"/","niche_",head(years,1),"-",tail(years,1),".tif")))
+    return(raster::brick(paste0(extraction.dir,"/","niche_",head(years,1),"-",tail(years,1),".tif")))
   
   # Force Raster to load large rasters into memory
   raster::rasterOptions(chunksize=2e+07,maxmemory=2e+08)
