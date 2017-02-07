@@ -53,7 +53,7 @@ library(paleocar)
 This demo script is available in the `/inst` folder at the location of the installed package.
 
 #### Load `paleocar` and set a working directory
-```{r, echo = TRUE, eval = FALSE}
+```{r, echo = TRUE}
 library(paleocar)
 library(magrittr) # The magrittr package enables piping in R.
 
@@ -66,7 +66,7 @@ dir.create(testDir, showWarnings=F, recursive=T)
 
 #### Load test datasets
 `paleocar` ships with test files defining a study area (Mesa Verde National Park), and pre-extracted data from the International Tree Ring Databank using the [`FedData` package](https://github.com/bocinsky/FedData). See the `data-raw/data.R` script (or the documentation for `FedData`) to learn how to download these data.
-```{r, echo = TRUE, eval = FALSE}
+```{r, echo = TRUE}
 # Load spatial polygon for the boundary of Mesa Verde National Park (MVNP) in southwestern Colorado:
 data(mvnp)
 
@@ -90,7 +90,7 @@ Finally, the `paleocar()` method is a convenience wrapper that runs all three of
 ##### `paleocar` reconstruction for a single location
 `paleocar` may be run for a single location by providing a vector of annualized values to be reconstructed. Simply provide a numeric vector the same length as your calibration years as the `predictands` parameter.
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, echo = TRUE}
 # Extract a vector of annualized climate data (the first cell in the raster)
 mvnp_prism.vector <- mvnp_prism[1][1,]
 
@@ -100,12 +100,20 @@ test.vector <- paleocar_models(predictands = mvnp_prism.vector,
                                prediction.years = 1:2000,
                                verbose = T)
 
-# Generate predictions and uncertainty                              
+# Generate predictions and uncertainty (and plot timeseries of each)                             
 predict_paleocar_models(models = test.vector,
                         meanVar = "chained",
-                        prediction.years = 600:1300)
+                        prediction.years = 600:1300) %>%
+  plot(x = as.numeric(names(.)),
+       y = .,
+       type = "l")
+  
+  
 uncertainty_paleocar_models(test.vector,
-                            prediction.years = 600:1300)
+                            prediction.years = 600:1300) %>%
+  plot(x = as.numeric(names(.)),
+       y = .,
+       type = "l")
 ```
 
 
@@ -114,7 +122,7 @@ Running `paleocar` on a matrix of locations (`predictands`) will generate recons
 the same set of predictors (`chronologies`). The matrix must be formatted such that each location is in a column, and each row is a year of data. Note that the number of rows of the matrix must be the same as the
 number of years provided to `calibration.years`.
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, echo = TRUE}
 # Extract a matrix of annualized climate data (all cells in the raster)
 mvnp_prism.matrix <- mvnp_prism %>%
   raster::as.matrix() %>% 
@@ -130,18 +138,27 @@ test.matrix <- paleocar_models(predictands = mvnp_prism.matrix,
                                prediction.years = 1:1985,
                                verbose = T)
 
-# Generate predictions and uncertainty
+# Generate predictions and uncertainty (and plot location means in uncertainty)
 predict_paleocar_models(models = test.matrix,
                         meanVar = "chained",
-                        prediction.years = 600:1300)
+                        prediction.years = 600:1300) %>%
+  rowMeans() %>%
+  plot(x = as.numeric(names(.)),
+       y = .,
+       type = "l")
+  
 uncertainty_paleocar_models(models = test.matrix,
-                            prediction.years = 600:1300)
+                            prediction.years = 600:1300) %>%
+  rowMeans() %>%
+  plot(x = 600:1300,
+       y = .,
+       type = "l")
 ```
 
 ##### `paleocar` reconstruction over a grid
 Paleocar can also be performed over a gridded climate dataset such as PRISM, so long as it is a `RasterStack` or `RasterBrick` as defined in the [`raster` package for *R*](https://CRAN.R-project.org/package=raster). Results will be returned in `RasterBrick` format.
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, echo = TRUE}
 # Print to show format
 mvnp_prism
 
@@ -172,7 +189,7 @@ test.raster.uncertainty %>%
 ##### `paleocar()` convenience wrapper
 The `paleocar()` convenience wrapper returns a list containing the `models`, `reconstructions`, and `uncertainty`. The `paleocar()` method also automatically saves the output of `predict_paleocar_models()` and `errors_paleocar_models()`. Pass variables through this function to other ones (e.g., `meanVar = "chained"`).
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, echo = TRUE}
 # Generate models and perform the reconstruction and error predictions.
 mvnp_recon <- paleocar(predictands = mvnp_prism,
                        label = "mvnp_prism",
@@ -193,7 +210,7 @@ str(mvnp_recon, max.level = 2)
 
 You can quickly load a prior reconstruction by setting `force.redo = FALSE`:
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, echo = TRUE}
 # Generate models and perform the reconstruction and error predictions.
 mvnp_recon <- paleocar(predictands = mvnp_prism,
                        label = "mvnp_prism",
@@ -211,7 +228,7 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
 
 #### Plot results
 
-```{r, echo = TRUE, eval = FALSE}
+```{r, echo = TRUE}
 mvnp_recon$predictions %>%
   raster::mean() %>%
   raster::plot()
