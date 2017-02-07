@@ -58,7 +58,7 @@ library(paleocar)
 library(magrittr) # The magrittr package enables piping in R.
 
 # Set a directory for testing
-testDir <- "~/paleocar Test"
+testDir <- "./paleocar_test/"
 # and create it if necessary
 dir.create(testDir, showWarnings=F, recursive=T)
 
@@ -73,7 +73,7 @@ data(mvnp)
 # Get Tree-ring data from the ITRDB for 10-degree buffer around MVNP
 data(itrdb)
 
-# Get 1/3 arc-second PRISM gridded data for the MVNP north study area
+# Get 1/3 arc-second PRISM gridded data for the MVNP north study area (water-year [October--September] precipitation, in millimeters)
 data(mvnp_prism)
 
 ```

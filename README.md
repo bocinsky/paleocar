@@ -62,7 +62,7 @@ library(paleocar)
 library(magrittr) # The magrittr package enables piping in R.
 
 # Set a directory for testing
-testDir <- "~/paleocar Test"
+testDir <- "./paleocar_test/"
 # and create it if necessary
 dir.create(testDir, showWarnings=F, recursive=T)
 ```
@@ -78,7 +78,7 @@ data(mvnp)
 # Get Tree-ring data from the ITRDB for 10-degree buffer around MVNP
 data(itrdb)
 
-# Get 1/3 arc-second PRISM gridded data for the MVNP north study area
+# Get 1/3 arc-second PRISM gridded data for the MVNP north study area (water-year [October--September] precipitation, in millimeters)
 data(mvnp_prism)
 ```
 
@@ -152,7 +152,7 @@ test.vector <- paleocar_models(predictands = mvnp_prism.vector,
     ## Clean linear models: 0 minutes
     ## Total modeling time: 0.01 minutes
     ## 
-    ## Total Modeling Time: 0.1077937 minutes
+    ## Total Modeling Time: 0.1107242 minutes
     ## 
     ## Optimizing models: 0 minutes
 
@@ -240,7 +240,7 @@ test.matrix <- paleocar_models(predictands = mvnp_prism.matrix,
 
     ## Calculating PaleoCAR models
     ## 
-    ## Prepare data and calculate CAR scores: 0.07 minutes
+    ## Prepare data and calculate CAR scores: 0.08 minutes
     ## 
     ## Calculating models of with 1 input vectors.
     ## Define models: 0.02 minutes
@@ -281,9 +281,9 @@ test.matrix <- paleocar_models(predictands = mvnp_prism.matrix,
     ## Define models: 0.02 minutes
     ## Calculate 12 linear models: 0 minutes
     ## Clean linear models: 0 minutes
-    ## Total modeling time: 0.02 minutes
+    ## Total modeling time: 0.03 minutes
     ## 
-    ## Total Modeling Time: 0.2297117 minutes
+    ## Total Modeling Time: 0.2388568 minutes
     ## 
     ## Optimizing models: 0.05 minutes
 
@@ -387,7 +387,7 @@ test.raster <- paleocar_models(predictands = mvnp_prism,
     ## Clean linear models: 0 minutes
     ## Total modeling time: 0.03 minutes
     ## 
-    ## Total Modeling Time: 0.2520008 minutes
+    ## Total Modeling Time: 0.2535981 minutes
     ## 
     ## Optimizing models: 0.05 minutes
 
@@ -489,7 +489,7 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
     ## Clean linear models: 0 minutes
     ## Total modeling time: 0.03 minutes
     ## 
-    ## Total Modeling Time: 0.2523213 minutes
+    ## Total Modeling Time: 0.2556791 minutes
     ## 
     ## Optimizing models: 0.05 minutes
     ## 
@@ -498,7 +498,7 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
     ## Generating uncertainty predictions
 
     ## 
-    ## The entire reconstruction took 0.48 minutes
+    ## The entire reconstruction took 0.49 minutes
 
 ``` r
 # Examine the structure of the output

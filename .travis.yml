@@ -6,7 +6,6 @@ sudo: required
 cache: packages
 
 r:
-  - oldrel
   - release
   - devel
 
@@ -24,9 +23,14 @@ apt_packages:
   - libgdal-dev
   
 r_packages:
+  - Rcpp
   - roxygen2
   - survival
 
+after_success:
+  - Rscript -e 'covr::codecov()'
+  
+  
 notifications:
   email:
     on_success: change
