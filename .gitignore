@@ -1,6 +1,6 @@
 # Output
-/OUTPUT
-/OUTPUT/*
+/paleocar_test
+/paleocar_test/*
 
 # Mac trash files
 .DS_Store
