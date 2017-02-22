@@ -1,6 +1,8 @@
 # Output
 /paleocar_test
 /paleocar_test/*
+/inst/out
+/inst/out/*
 
 # Mac trash files
 .DS_Store
