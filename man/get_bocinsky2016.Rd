@@ -23,10 +23,10 @@ The directory will be created if missing. Defaults to './RAW/NED/'.}
 The directory will be created if missing. Defaults to './EXTRACTIONS/NED/'.}
 
 \item{prcp_threshold}{The minimum amount of water-year precipitation, in mm, required to be in the farming niche.
-Defaults to 300 mm.}
+Defaults to 300 mm. Use 'NA' to suppress niche calculation.}
 
 \item{gdd_threshold}{The minimum number of Fahrenheit growing degree daysrequired to be in the farming niche.
-Defaults to 1800 FGDD.}
+Defaults to 1800 FGDD. Use 'NA' to suppress niche calculation.}
 
 \item{years}{An integer vector of years, between AD 1 and 2000, you wish to extract.
 Defaults to 1:2000.}

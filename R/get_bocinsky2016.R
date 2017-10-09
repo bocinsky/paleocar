@@ -14,9 +14,9 @@ globalVariables(c("tile", "type"))
 #' @param extraction.dir A character string indicating where the extracted and cropped DEM should be put.
 #' The directory will be created if missing. Defaults to './EXTRACTIONS/NED/'.
 #' @param prcp_threshold The minimum amount of water-year precipitation, in mm, required to be in the farming niche.
-#' Defaults to 300 mm.
+#' Defaults to 300 mm. Use 'NA' to suppress niche calculation.
 #' @param gdd_threshold The minimum number of Fahrenheit growing degree daysrequired to be in the farming niche.
-#' Defaults to 1800 FGDD.
+#' Defaults to 1800 FGDD. Use 'NA' to suppress niche calculation.
 #' @param years An integer vector of years, between AD 1 and 2000, you wish to extract.
 #' Defaults to 1:2000.
 #' @param force.redo If an extraction for this template and label already exists, should a new one be created?
@@ -24,6 +24,8 @@ globalVariables(c("tile", "type"))
 #' @importFrom magrittr %>% %<>%
 #' @importFrom foreach %do%
 #' @importFrom utils head tail
+#' @importFrom gdalUtils mosaic_rasters
+#' @importFrom purrr map
 #' @export
 get_bocinsky2016 <- function(template = NULL,
                              label = "paleocar",
@@ -72,17 +74,17 @@ get_bocinsky2016 <- function(template = NULL,
                            destdir = raw.dir)
   }
   
-  foreach::foreach(type = c("PPT","GDD")) %do% {
+  # Download, mosaick, and crop each type
+  out_bricks <- foreach::foreach(type = c("PPT","GDD")) %do% {
     
-    if(!force.redo & file.exists(paste0(extraction.dir,"/",type,"_niche_",head(years,1),"-",tail(years,1),".tif"))) return(NA)
+    if(!force.redo & file.exists(paste0(extraction.dir,"/",type,"_",head(years,1),"-",tail(years,1),".tif"))) return(
+      raster::brick(paste0(extraction.dir,"/",type,"_",head(years,1),"-",tail(years,1),".tif"))
+    )
     
-    system(paste0("gdal_merge.py -q -ot UInt16 -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND -o ",
-                  paste0(extraction.dir,"/",type,"_merged.tif"),
-                  " ",
-                  paste0(raw.dir,"/",grep(type, files, value = T),collapse=" ")),
-           intern = TRUE,
-           ignore.stdout = TRUE,
-           ignore.stderr = TRUE)
+    system(paste0("gdalbuildvrt temp.vrt ", paste0(raw.dir,"/",grep(type, files, value = T), collapse=" ")))
+    system(paste0("gdal_translate -q -ot UInt16 -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND temp.vrt ",
+                  paste0(extraction.dir,"/",type,"_merged.tif")))
+    unlink("temp.vrt")
     
     tile_brick <- suppressWarnings(raster::brick(paste0(extraction.dir,"/",type,"_merged.tif")))
     
@@ -97,28 +99,55 @@ get_bocinsky2016 <- function(template = NULL,
                         options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),
                         overwrite=T,
                         setStatistics=FALSE)
+  
+    unlink(paste0(extraction.dir,"/",type,"_merged.tif"))
     
-    tile_niche <- tile_brick >= ifelse(type == "PPT", prcp_threshold, gdd_threshold)
+    return(tile_brick)
+  }
+  
+  names(out_bricks) <- c("PPT","GDD")
+  
+  out_bricks %<>% purrr::map(function(x){
+    projection(x) <- CRS("+proj=longlat +datum=WGS84")
+    return(x)
+    }) 
+  
+  if(!is.na(prcp_threshold) & !is.na(gdd_threshold)){
+
+    if(!force.redo & file.exists(paste0(extraction.dir,"/PPT_niche_",head(years,1),"-",tail(years,1),".tif"))){
+      ppt_niche <- raster::brick(paste0(extraction.dir,"/PPT_niche_",head(years,1),"-",tail(years,1),".tif"))
+      }else{
+        ppt_niche <- out_bricks$PPT >= prcp_threshold
+        
+        raster::writeRaster(ppt_niche, paste0(extraction.dir,"/PPT_niche_",head(years,1),"-",tail(years,1),".tif"),
+                            datatype="INT1U",
+                            options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),
+                            overwrite=T,
+                            setStatistics=FALSE)
+    }
+
+    if(!force.redo & file.exists(paste0(extraction.dir,"/GDD_niche_",head(years,1),"-",tail(years,1),".tif"))){
+      gdd_niche <- raster::brick(paste0(extraction.dir,"/GDD_niche_",head(years,1),"-",tail(years,1),".tif"))
+    }else{
+      gdd_niche <- out_bricks$GDD >= gdd_threshold
+      
+      raster::writeRaster(gdd_niche, paste0(extraction.dir,"/GDD_niche_",head(years,1),"-",tail(years,1),".tif"),
+                          datatype="INT1U",
+                          options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),
+                          overwrite=T,
+                          setStatistics=FALSE)
+    }
     
-    raster::writeRaster(tile_niche, paste0(extraction.dir,"/",type,"_niche_",head(years,1),"-",tail(years,1),".tif"),
+    out <- precip_niche * gdd_niche
+    
+    raster::writeRaster(out, paste0(extraction.dir,"/","niche_",head(years,1),"-",tail(years,1),".tif"),
                         datatype="INT1U",
                         options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),
                         overwrite=T,
                         setStatistics=FALSE)
     
-    unlink(paste0(extraction.dir,"/",type,"_merged.tif"))
+    out_bricks$niche <- out
   }
   
-  precip_niche <- raster::brick(paste0(extraction.dir,"/PPT_niche_",head(years,1),"-",tail(years,1),".tif"))
-  gdd_niche <- raster::brick(paste0(extraction.dir,"/GDD_niche_",head(years,1),"-",tail(years,1),".tif"))
-  
-  out <- precip_niche * gdd_niche
-  
-  raster::writeRaster(out, paste0(extraction.dir,"/","niche_",head(years,1),"-",tail(years,1),".tif"),
-                      datatype="INT1U",
-                      options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),
-                      overwrite=T,
-                      setStatistics=FALSE)
-  
-  return(out)
+  return(out_bricks)
 }
