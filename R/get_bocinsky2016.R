@@ -24,7 +24,6 @@ globalVariables(c("tile", "type"))
 #' @importFrom magrittr %>% %<>%
 #' @importFrom foreach %do%
 #' @importFrom utils head tail
-#' @importFrom gdalUtils mosaic_rasters
 #' @importFrom purrr map
 #' @export
 get_bocinsky2016 <- function(template = NULL,
