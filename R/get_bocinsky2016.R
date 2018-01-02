@@ -73,35 +73,37 @@ get_bocinsky2016 <- function(template = NULL,
                            destdir = raw.dir)
   }
   
-  # Download, mosaick, and crop each type
+  # mosaick
   out_bricks <- foreach::foreach(type = c("PPT","GDD")) %do% {
     
-    if(!force.redo & file.exists(paste0(extraction.dir,"/",type,"_",head(years,1),"-",tail(years,1),".tif"))) return(
-      raster::brick(paste0(extraction.dir,"/",type,"_",head(years,1),"-",tail(years,1),".tif"))
-    )
-    
-    system(paste0("gdalbuildvrt temp.vrt ", paste0(raw.dir,"/",grep(type, files, value = T), collapse=" ")))
-    system(paste0("gdal_translate -q -ot UInt16 -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND temp.vrt ",
-                  paste0(extraction.dir,"/",type,"_merged.tif")))
-    unlink("temp.vrt")
-    
-    tile_brick <- suppressWarnings(raster::brick(paste0(extraction.dir,"/",type,"_merged.tif")))
-    
-    if(!is.null(template)){
-      tile_brick %<>%
-        raster::crop(template) %>%
-        raster::mask(template)
+    if(force.redo | !file.exists(paste0(extraction.dir,"/",type,"_",head(years,1),"-",tail(years,1),".tif"))){
+      
+      system(paste0("gdalbuildvrt temp.vrt ", paste0(raw.dir,"/",grep(type, files, value = T), collapse=" ")))
+      system(paste0("gdal_translate -q -ot UInt16 -co COMPRESS=DEFLATE -co ZLEVEL=9 -co INTERLEAVE=BAND temp.vrt ",
+                    paste0("'",extraction.dir,"/",type,"_merged.tif","'")))
+      unlink("temp.vrt")
+      
+      tile_brick <- suppressWarnings(raster::brick(paste0(extraction.dir,"/",type,"_merged.tif")))
+      
+      if(!is.null(template)){
+        tile_brick %<>%
+          raster::crop(template) %>%
+          raster::mask(template)
+      }
+      
+      raster::writeRaster(tile_brick, paste0(extraction.dir,"/",type,"_",head(years,1),"-",tail(years,1),".tif"),
+                          datatype="INT2U",
+                          options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),
+                          overwrite=T,
+                          setStatistics=FALSE)
+      
+      unlink(paste0(extraction.dir,"/",type,"_merged.tif"))
+      
     }
     
-    raster::writeRaster(tile_brick, paste0(extraction.dir,"/",type,"_",head(years,1),"-",tail(years,1),".tif"),
-                        datatype="INT2U",
-                        options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),
-                        overwrite=T,
-                        setStatistics=FALSE)
-  
-    unlink(paste0(extraction.dir,"/",type,"_merged.tif"))
-    
-    return(tile_brick)
+    return(
+      raster::brick(paste0(extraction.dir,"/",type,"_",head(years,1),"-",tail(years,1),".tif"))
+    )
   }
   
   names(out_bricks) <- c("PPT","GDD")
@@ -113,21 +115,19 @@ get_bocinsky2016 <- function(template = NULL,
   
   if(!is.na(prcp_threshold) & !is.na(gdd_threshold)){
 
-    if(!force.redo & file.exists(paste0(extraction.dir,"/PPT_niche_",head(years,1),"-",tail(years,1),".tif"))){
-      ppt_niche <- raster::brick(paste0(extraction.dir,"/PPT_niche_",head(years,1),"-",tail(years,1),".tif"))
-      }else{
-        ppt_niche <- out_bricks$PPT >= prcp_threshold
+    if(force.redo | !file.exists(paste0(extraction.dir,"/PPT_niche_",head(years,1),"-",tail(years,1),".tif"))){
+      ppt_niche <- out_bricks$PPT >= prcp_threshold
         
         raster::writeRaster(ppt_niche, paste0(extraction.dir,"/PPT_niche_",head(years,1),"-",tail(years,1),".tif"),
                             datatype="INT1U",
                             options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),
                             overwrite=T,
                             setStatistics=FALSE)
-    }
+      }
+    ppt_niche <- raster::brick(paste0(extraction.dir,"/PPT_niche_",head(years,1),"-",tail(years,1),".tif"))
+    
 
-    if(!force.redo & file.exists(paste0(extraction.dir,"/GDD_niche_",head(years,1),"-",tail(years,1),".tif"))){
-      gdd_niche <- raster::brick(paste0(extraction.dir,"/GDD_niche_",head(years,1),"-",tail(years,1),".tif"))
-    }else{
+    if(force.redo | !file.exists(paste0(extraction.dir,"/GDD_niche_",head(years,1),"-",tail(years,1),".tif"))){
       gdd_niche <- out_bricks$GDD >= gdd_threshold
       
       raster::writeRaster(gdd_niche, paste0(extraction.dir,"/GDD_niche_",head(years,1),"-",tail(years,1),".tif"),
@@ -135,7 +135,10 @@ get_bocinsky2016 <- function(template = NULL,
                           options=c("COMPRESS=DEFLATE", "ZLEVEL=9", "INTERLEAVE=BAND"),
                           overwrite=T,
                           setStatistics=FALSE)
+      
+      
     }
+    gdd_niche <- raster::brick(paste0(extraction.dir,"/GDD_niche_",head(years,1),"-",tail(years,1),".tif"))
     
     out <- precip_niche * gdd_niche
     
