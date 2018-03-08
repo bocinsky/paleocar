@@ -40,7 +40,17 @@ uncertainty_paleocar_models <- function(models,
   }
   
   if(class(models$predictands) %in% c("RasterBrick","RasterStack")){
-    errors <- raster::setValues(models$predictands,t(errors))
+    na.errors <- matrix(data=NA,
+                        nrow=length(prediction.years),
+                        ncol=raster::ncell(models$predictands))
+    
+    na.errors <- raster::setValues(models$predictands,
+                                values = t(na.errors))
+    
+    na.errors[models$models$cell %>% unique()] <- t(errors)
+    
+    errors <- na.errors
+    
     names(errors) <- prediction.years
   }
   
