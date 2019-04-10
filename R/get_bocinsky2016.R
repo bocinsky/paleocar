@@ -140,7 +140,7 @@ get_bocinsky2016 <- function(template = NULL,
     }
     gdd_niche <- raster::brick(paste0(extraction.dir,"/GDD_niche_",head(years,1),"-",tail(years,1),".tif"))
     
-    out <- precip_niche * gdd_niche
+    out <- ppt_niche * gdd_niche
     
     raster::writeRaster(out, paste0(extraction.dir,"/","niche_",head(years,1),"-",tail(years,1),".tif"),
                         datatype="INT1U",
