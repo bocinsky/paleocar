@@ -4,47 +4,18 @@
 \alias{predict_paleocar_models}
 \title{Get a RasterBrick reconstruction from a PaleoCAR batch model}
 \usage{
-predict_paleocar_models(models, meanVar = "chained", floor = NULL,
-  ceiling = NULL, prediction.years = NULL, ...)
+predict_paleocar_models(models, prediction.years = NULL, ...)
 }
 \arguments{
 \item{models}{A PaleoCAR batch model, as returned from \code{\link{paleocar_models}}.}
-
-\item{meanVar}{A character string indicating the type of mean-variance matching to perform: either "none" (default), "calibration", or "chained".}
-
-\item{floor}{Numeric, an optional lower bound for reconstructed values, such as \code{0} for precipitation reconstructions.}
-
-\item{ceiling}{Numeric, an optional upper bound for reconstructed values.}
 
 \item{prediction.years}{The set of years over which to generate reconstruction rasters. Optional.}
 
 \item{...}{Further arguments to be passed to other functions.}
 }
 \value{
-A RasterBrick containing the predictions for each year.
+A tibble or RasterBrick containing the predictions for each year.
 }
 \description{
 This generates a reconstruction RasterBrick from a PaleoCAR batch model.
-}
-\details{
-Optionally, mean-variance matching (scaling/transformation) can be performed.
-Let \bold{\eqn{X_c}} be the vector of calibration values over the calibration period,
-\bold{\eqn{X_r}} be the vector of reconstructed values over the calibration period,
-\bold{\eqn{A_r}} be the vector of all reconstructed values (of which \bold{\emph{X_r}} 
-is a part), and \bold{\emph{A_r*}} vector of all reconstructed values after 
-mean and variance matching. Then,
-
-\bold{\emph{A_r*}} = \eqn{\alpha} x \bold{\eqn{A_r}}) + \bold{\eqn{\beta}},
-
-where, \eqn{\alpha} = \eqn{\sigma}(\bold{\emph{X_c}})/\eqn{\sigma}(\bold{\emph{X_r}}),
-
-or a scalar that is the ratio of the standard deviations of the calibration and 
-reconstructed vectors over the calibration period,
-
-and, \bold{\eqn{\beta}} = \eqn{\mu}(\bold{\emph{X_c}})-[\eqn{\alpha} x \eqn{\mu}(\bold{\emph{X_r}})],
-
-or a transformation to the mean of the calibration vector corrected by the 
-scaled mean of the reconstructed data over the calibration period.
-Thus, every reconstruction for a particular cell will have the same mean and 
-variance over the calibration period.
 }

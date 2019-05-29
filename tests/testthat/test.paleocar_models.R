@@ -32,9 +32,6 @@ testthat::test_that("Test that the paleocar function works", {
                          calibration.years = calibration.years,
                          prediction.years = prediction.years,
                          out.dir = "./",
-                         meanVar = "chained",
-                         floor = 0,
-                         ceiling = NULL,
                          force.redo = T,
                          verbose = T)
   
@@ -42,9 +39,6 @@ testthat::test_that("Test that the paleocar function works", {
   
   testthat::expect_named(mvnp_recon)
   
-  testthat::expect_is(mvnp_recon$predictions, "RasterBrick")
-  
   unlink("mvnp_prism.models.Rds")
   unlink("mvnp_prism.prediction.Rds")
-  unlink("mvnp_prism.uncertainty.Rds")
 })

@@ -1,5 +1,7 @@
 ---
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 paleocar
@@ -56,6 +58,7 @@ This demo script is available in the `/inst` folder at the location of the insta
 ```{r, echo = TRUE}
 library(paleocar)
 library(magrittr) # The magrittr package enables piping in R.
+library(ggplot2)
 
 # Set a directory for testing
 testDir <- "./paleocar_test/"
@@ -101,19 +104,18 @@ test.vector <- paleocar_models(predictands = mvnp_prism.vector,
                                verbose = T)
 
 # Generate predictions and uncertainty (and plot timeseries of each)                             
-predict_paleocar_models(models = test.vector,
-                        meanVar = "chained",
-                        prediction.years = 600:1300) %>%
-  plot(x = as.numeric(names(.)),
-       y = .,
-       type = "l")
-  
-  
-uncertainty_paleocar_models(test.vector,
-                            prediction.years = 600:1300) %>%
-  plot(x = as.numeric(names(.)),
-       y = .,
-       type = "l")
+test.prediction <- predict_paleocar_models(models = test.vector,
+                                           prediction.years = 600:1299)
+
+test.prediction %>%
+  ggplot(aes(x = year,
+             y = Prediction)) +
+  geom_ribbon(aes(ymin = Prediction - `PI Deviation`,
+                  ymax = Prediction + `PI Deviation`),
+              color = NA,
+              fill = "dodgerblue") +
+  geom_line(size = 0.2)
+
 ```
 
 
@@ -128,10 +130,6 @@ mvnp_prism.matrix <- mvnp_prism %>%
   raster::as.matrix() %>% 
   t()
 
-# Print to show format
-mvnp_prism.matrix %>% 
-  tibble::as_tibble()
-
 test.matrix <- paleocar_models(predictands = mvnp_prism.matrix,
                                chronologies = itrdb,
                                calibration.years = 1924:1983,
@@ -139,20 +137,22 @@ test.matrix <- paleocar_models(predictands = mvnp_prism.matrix,
                                verbose = T)
 
 # Generate predictions and uncertainty (and plot location means in uncertainty)
-predict_paleocar_models(models = test.matrix,
-                        meanVar = "chained",
-                        prediction.years = 600:1300) %>%
-  rowMeans() %>%
-  plot(x = as.numeric(names(.)),
-       y = .,
-       type = "l")
-  
-uncertainty_paleocar_models(models = test.matrix,
-                            prediction.years = 600:1300) %>%
-  rowMeans() %>%
-  plot(x = 600:1300,
-       y = .,
-       type = "l")
+test.prediction <- predict_paleocar_models(models = test.matrix,
+                                           prediction.years = 600:1299)
+
+test.prediction %>%
+  dplyr::mutate(cell = as.factor(cell)) %>%
+  dplyr::filter(cell %in% c(1,200,400,600)) %>%
+  ggplot(aes(x = year,
+             y = Prediction)) +
+  geom_ribbon(aes(ymin = Prediction - `PI Deviation`,
+                  ymax = Prediction + `PI Deviation`,
+                  fill = cell),
+              color = NA) +
+  geom_line(size = 0.2) +
+  facet_wrap(~cell, nrow = 2) +
+  xlab("Year CE")
+
 ```
 
 ##### `paleocar` reconstruction over a grid
@@ -170,19 +170,10 @@ test.raster <- paleocar_models(predictands = mvnp_prism,
 
 # Generate predictions and errors
 test.raster.predictions <- predict_paleocar_models(models = test.raster,
-                                                   meanVar = "chained",
-                                                   prediction.years = 600:1300)
-test.raster.uncertainty <- uncertainty_paleocar_models(models = test.raster,
-                                                       prediction.years = 600:1300)
+                                                   prediction.years = 600:1299)
 
-# Plot the mean predictions and uncertainty
-test.raster.predictions %>% 
-  raster::mean() %>% 
-  raster::plot()
-
-test.raster.uncertainty %>% 
-  raster::mean() %>% 
-  raster::plot()
+  
+raster::plot(test.raster.predictions$Prediction[["X1200"]])
 
 ```
 
@@ -195,16 +186,14 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
                        label = "mvnp_prism",
                        chronologies = itrdb,
                        calibration.years = 1924:1983,
-                       prediction.years = 1:2000,
+                       prediction.years = 600:1299,
                        out.dir = testDir,
-                       meanVar = "none",
-                       floor = 0,
-                       ceiling = NULL,
                        force.redo = T,
                        verbose = T)
 
 # Examine the structure of the output
-str(mvnp_recon, max.level = 2)
+str(mvnp_recon, 
+    max.level = 2)
 
 ```
 
@@ -216,11 +205,8 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
                        label = "mvnp_prism",
                        chronologies = itrdb,
                        calibration.years = 1924:1983,
-                       prediction.years = 1:2000,
-                       out.dir = "./",
-                       meanVar = "none",
-                       floor = 0,
-                       ceiling = NULL,
+                       prediction.years = 600:1299,
+                       out.dir = testDir,
                        force.redo = F,
                        verbose = T)
 
@@ -229,7 +215,7 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
 #### Plot results
 
 ```{r, echo = TRUE}
-mvnp_recon$predictions %>%
+mvnp_recon$predictions$Prediction %>%
   raster::mean() %>%
   raster::plot()
 ```

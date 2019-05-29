@@ -162,11 +162,18 @@ paleocar_models_simple <- function(predictands,
   
   data.table::setkey(all.lms,cell,year)
   
-  allModels <- list(models = all.lms,
+  allModels <- list(models = all.lms %>% 
+                      tibble::as_tibble(),
                     predictands = predictands,
                     predictor.matrix = predictor.matrix,
                     reconstruction.matrix = reconstruction.matrix,
-                    carscores = data.table::data.table(t(carscores)))
+                    carscores = carscores %>%
+                      t() %>%
+                      data.table::data.table() %>% 
+                      tibble::as_tibble() %>%
+                      dplyr::mutate(., cell = 1:nrow(.)) %>%
+                      tidyr::gather("series", "car_score", -cell)
+                    )
     
   return(allModels)
 }

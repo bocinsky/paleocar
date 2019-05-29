@@ -6,9 +6,10 @@
 available from the NOAA paleoclimate database:}
 \usage{
 get_bocinsky2016(template = NULL, label = "paleocar",
-  raw.dir = "./RAW/PALEOCAR/", extraction.dir = paste0("./EXTRACTIONS/",
-  label, "/PALEOCAR/"), prcp_threshold = 300, gdd_threshold = 1800,
-  years = 1:2000, force.redo = F)
+  raw.dir = "./RAW/PALEOCAR/",
+  extraction.dir = paste0("./EXTRACTIONS/", label, "/PALEOCAR/"),
+  prcp_threshold = 300, gdd_threshold = 1800, years = 1:2000,
+  force.redo = F)
 }
 \arguments{
 \item{template}{A Spatial* or Raster* object from which to define the area of interest.

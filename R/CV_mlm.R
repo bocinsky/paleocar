@@ -12,9 +12,10 @@
 CV_mlm <- function (obj) 
 {
   if(class(obj)[[1]]=="lm"){
-    out <- forecast::CV(obj)[c("CV", "AICc")]
-    out <- t(as.matrix(out))
-    return(out)
+    return(forecast::CV(obj)[c("CV", "AICc", "AdjR2")] %>%
+      as.matrix() %>%
+      t() %>%
+      magrittr::set_rownames(colnames((obj$model)[[1]])))
   }
   n <- nrow(obj$residuals)
   aic.raw <- AIC_mlm(obj)
@@ -24,8 +25,11 @@ CV_mlm <- function (obj)
   aicc <- aic + 2 * (k + 2) * (k + 3)/(n - k - 3)
 #   bic <- aic + (k + 2) * (log(n) - 2)
   cv <- colMeans((obj$residuals/(1 - stats::hatvalues(obj)))^2, na.rm = TRUE)
+  adjr2 <- summary(obj) %>%
+    purrr::map(`[[`,"adj.r.squared") %>%
+    unlist()
   
-  out <- do.call(cbind,list(cv, aicc))
-  colnames(out) <- c("CV", "AICc")
+  out <- do.call(cbind,list(cv, aicc, adjr2))
+  colnames(out) <- c("CV", "AICc", "AdjR2")
   return(out)
 }

@@ -5,9 +5,8 @@
 \title{Fit PaleoCAR models to a RasterBrick of predictands, and generate prediction and uncertainty RasterBricks.}
 \usage{
 paleocar(chronologies, predictands, calibration.years,
-  prediction.years = NULL, label, out.dir = "./OUTPUT/", force.redo = F,
-  verbose = F, return.predictions = T, return.uncertainty = T,
-  return.objects = T, ...)
+  prediction.years = NULL, label, out.dir = "./OUTPUT/",
+  force.redo = F, verbose = F, ...)
 }
 \arguments{
 \item{chronologies}{An ITRDB object, as in from FedData::get_itrdb.}
@@ -27,26 +26,16 @@ If missing, defaults to the total years present in \code{chronologies}.}
 
 \item{verbose}{Logical, display status messages during run.}
 
-\item{return.predictions}{Logical, should the predictions be generated?}
-
-\item{return.uncertainty}{Logical, should the uncertainty estimates be generated?}
-
-\item{return.objects}{Logical, should objects be returned (as opposed to only writing them to disk)?}
-
 \item{...}{Further arguments to be passed to other functions.}
 }
 \value{
 A named list containing
 \itemize{
   \item{\code{models}  The PaleoCAR models, as computed by \code{\link{paleocar_models}}.}
-  \item{\code{recon}  The PaleoCAR reconstruction, as computed by \code{\link{predict_paleocar_models}}.}
-  \item{\code{errors}  The PaleoCAR reconstruction average LOOCV error, as computed by \code{\link{uncertainty_paleocar_models}}.}
-  \item{\code{sizes}  The PaleoCAR model sizes, as computed by \code{\link{size_paleocar_models}}.}
+  \item{\code{predictions}  The PaleoCAR reconstruction, as computed by \code{\link{predict_paleocar_models}}.}
 }
 }
 \description{
 This is a wrapper function to the four primary methods in the PaleoCAR package, specifically for
-processing predictands held in a RasterBrick. Additionally, it allows for the specification of
-a \code{floor} and/or \code{ceiling} corrections for a reconstruction (e.g., of precipitation).
-It returns a list containing the models, predictions, and cross-validated uncertainty estimates.
+processing predictands held in a RasterBrick.
 }
