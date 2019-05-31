@@ -113,15 +113,13 @@ predict_paleocar_models <- function(models,
                                          `PI Deviation` = pi),
                          by = c("cell","year"))
     } else {
-      x %<>%
+      x %>%
         dplyr::select(cell, year, endYear) %>%
         dplyr::rowwise() %>%
         dplyr::mutate(year = list(year:endYear)) %>%
         dplyr::select(cell, year) %>%
         tidyr::unnest() %>%
-        dplyr::arrange(cell, year)
-      
-      x %>%
+        dplyr::arrange(cell, year) %>%
         dplyr::left_join(predict_mlm(object = lms, 
                                      newdata = models$reconstruction.matrix[, x$model[[1]], drop = F] %>% 
                                        as.data.frame() %>%
@@ -130,8 +128,6 @@ predict_paleocar_models <- function(models,
     }
     
   }
-  
-  
   
   out <- 
     models$models %>%
