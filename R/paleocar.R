@@ -42,6 +42,7 @@ paleocar <- function(chronologies,
     models <- paleocar_models(chronologies = chronologies,
                               predictands = predictands,
                               calibration.years = calibration.years,
+                              prediction.years = prediction.years,
                               verbose = verbose,
                               ...)
     
@@ -59,8 +60,7 @@ paleocar <- function(chronologies,
            recursive = TRUE, 
            force = TRUE)
     
-    recon <- predict_paleocar_models(models = models,
-                                     ...)
+    recon <- predict_paleocar_models(models = models)
     readr::write_rds(recon,
                      path = paste0(out.dir,label,".prediction.Rds"),
                      compress = "gz")

@@ -347,12 +347,11 @@ paleocar_models <- function(chronologies,
       if ("mlm" %in% class(model.mlm)) {
         model.mlm %<>%
           unlist_mlm() %>%
-          purrr::map(strip_lm) %>%
+          purrr::map(function(x){attr(x$terms, "term.labels")}) %>%
           tibble::tibble(cell = names(.),
                          coefs = .)
       } else {
-        model.mlm %<>%
-          strip_lm() %>%
+        model.mlm <- attr(model.mlm$terms, "term.labels") %>%
           list() %>%
           magrittr::set_names(colnames(response)) %>%
           tibble::tibble(cell = names(.),
@@ -521,10 +520,11 @@ paleocar_models <- function(chronologies,
   # @OUT final.models
   t <- Sys.time()
   get.coef.names <- function(year, model, coefs, numPreds, CV, AICc, AdjR2) {
-    the.coefs <- lapply(coefs, 
-                        function(x) {
-      names(stats::coefficients(x))[-1]
-    })
+    the.coefs <- coefs
+    # the.coefs <- lapply(coefs, 
+    #                     function(x) {
+    #   names(stats::coefficients(x))[-1]
+    # })
     test.out <-
       lapply(the.coefs, function(x) {
         which(rowSums(predlist[, x, drop = F]) == length(x))
@@ -566,7 +566,11 @@ paleocar_models <- function(chronologies,
   
   allModels <- list(
     models = allModels %>% 
-      tibble::as_tibble(),
+      tibble::as_tibble() %>%
+      dplyr::mutate(model = model %>% 
+                      purrr::map(sort)) %>%
+      dplyr::distinct() %>%
+      dplyr::arrange(cell, year),
     predictands = predictands,
     predictor.matrix = predictor.matrix,
     reconstruction.matrix = reconstruction.matrix,

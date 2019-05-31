@@ -5,7 +5,7 @@ predict_mlm <-
             level = 0.95,
             ...) 
   {
-
+    
     # if (missing(newdata))
     #   stop("the 'se.fit' argument is not yet implemented for \"mlm\" objects")
     if (missing(newdata)) {
@@ -69,10 +69,34 @@ predict_mlm <-
     
     if (!is.null(offset)) 
       pred <- pred + offset
-      return(list(fit = pred,
-                  lwr_ci = pred - ci_error,
-                  upr_ci = pred + ci_error,
-                  lwr_pi = pred - pi_error,
-                  upr_pi = pred + pi_error))
+    
+    ci_error %<>%
+      magrittr::set_colnames(colnames(pred)) %>%
+      magrittr::set_rownames(rownames(pred)) %>%
+      as.data.frame() %>%
+      tibble::rownames_to_column(var = "year") %>%
+      tidyr::gather(cell,`CI Deviation`,-year)
+    
+    pi_error %<>%
+      magrittr::set_colnames(colnames(pred)) %>%
+      magrittr::set_rownames(rownames(pred)) %>%
+      as.data.frame() %>%
+      tibble::rownames_to_column(var = "year") %>%
+      tidyr::gather(cell,`PI Deviation`,-year)
+    
+    pred %<>%
+      as.data.frame() %>%
+      tibble::rownames_to_column(var = "year") %>%
+      tidyr::gather(cell,Prediction,-year)
+    
+    return(
+      pred %>%
+        dplyr::full_join(ci_error,
+                         by = c("cell","year")) %>%
+        dplyr::full_join(pi_error,
+                         by = c("cell","year")) %>%
+        tibble::as_tibble() %>%
+        dplyr::mutate_at(.vars = dplyr::vars(cell, year), as.integer)
+    ) 
   }
 

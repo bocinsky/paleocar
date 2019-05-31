@@ -165,15 +165,16 @@ mvnp_prism
 test.raster <- paleocar_models(predictands = mvnp_prism,
                                chronologies = itrdb,
                                calibration.years = 1924:1983,
-                               prediction.years = 1:2000,
+                               prediction.years = 600:1299,
                                verbose = T)
 
 # Generate predictions and errors
 test.raster.predictions <- predict_paleocar_models(models = test.raster,
                                                    prediction.years = 600:1299)
 
-  
-raster::plot(test.raster.predictions$Prediction[["X1200"]])
+test.raster.predictions$Prediction %>%
+  raster::mean() %>%
+  raster::plot()
 
 ```
 
@@ -182,6 +183,26 @@ The `paleocar()` convenience wrapper returns a list containing the `models`, `re
 
 ```{r, echo = TRUE}
 # Generate models and perform the reconstruction and error predictions.
+
+mvnp_models <- paleocar_models(predictands = mvnp_prism,
+                       label = "mvnp_prism",
+                       chronologies = itrdb,
+                       calibration.years = 1924:1983,
+                       prediction.years = 600:1299,
+                       out.dir = testDir,
+                       force.redo = T,
+                       verbose = T)
+
+mvnp_recon <- paleocar(models = mvnp_models,
+                       predictands = mvnp_prism,
+                       label = "mvnp_prism",
+                       chronologies = itrdb,
+                       calibration.years = 1924:1983,
+                       prediction.years = 600:1299,
+                       out.dir = testDir,
+                       force.redo = T,
+                       verbose = T)
+
 mvnp_recon <- paleocar(predictands = mvnp_prism,
                        label = "mvnp_prism",
                        chronologies = itrdb,
@@ -216,6 +237,14 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
 
 ```{r, echo = TRUE}
 mvnp_recon$predictions$Prediction %>%
+  raster::mean() %>%
+  raster::plot()
+
+mvnp_recon$predictions$`CI Deviation` %>%
+  raster::mean() %>%
+  raster::plot()
+
+mvnp_recon$predictions$`PI Deviation` %>%
   raster::mean() %>%
   raster::plot()
 ```

@@ -1,5 +1,7 @@
 strip_lm <- function (object) 
 {
+  
+  # return(attr(object$terms, "term.labels"))
   op <- object
   op$y <- NULL
   op$model <- NULL

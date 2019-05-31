@@ -25,7 +25,7 @@ The primary difference between the latest version of `paleocar` and that
 presented in Bocinsky and Kohler (2014) is, here, model selection is
 performed by minimizing the corrected Akaike’s Information Criterion.
 
-A more recent reference would be Bocinsky et al. (2016):
+A more recent reference would be Bocinsky et al. (2016):
 
 Bocinsky, R. K., Rush, J., Kintigh, K. W., and Kohler, T. A. (2016).
 Exploration and exploitation in the macrohistory of the pre-Hispanic
@@ -120,7 +120,8 @@ National Park), and pre-extracted data from the International Tree Ring
 Databank using the [`FedData`
 package](https://github.com/bocinsky/FedData). See the `data-raw/data.R`
 script (or the documentation for `FedData`) to learn how to download
-these data.
+these
+data.
 
 ``` r
 # Load spatial polygon for the boundary of Mesa Verde National Park (MVNP) in southwestern Colorado:
@@ -201,7 +202,7 @@ test.vector <- paleocar_models(predictands = mvnp_prism.vector,
     ## 13 cell-years remaining
     ## 
     ## Calculating models of with 5 input vectors.
-    ## Define models: 0.02 minutes
+    ## Define models: 0.01 minutes
     ## Calculate 2 linear models: 0 minutes
     ## Clean linear models: 0 minutes
     ## Total modeling time: 0.02 minutes
@@ -213,9 +214,14 @@ test.vector <- paleocar_models(predictands = mvnp_prism.vector,
     ## Clean linear models: 0 minutes
     ## Total modeling time: 0.02 minutes
     ## 
-    ## Total Modeling Time: 0.1424042 minutes
+    ## Total Modeling Time: 0.1283067 minutes
     ## 
     ## Optimizing models: 0 minutes
+
+    ## Warning: distinct() does not fully support columns of type `list`.
+    ## List elements are compared by reference, see ?distinct for details.
+    ## This affects the following columns:
+    ## - `model`
 
 ``` r
 # Generate predictions and uncertainty (and plot timeseries of each)                             
@@ -258,52 +264,57 @@ test.matrix <- paleocar_models(predictands = mvnp_prism.matrix,
 
     ## Calculating PaleoCAR models
     ## 
-    ## Prepare data and calculate CAR scores: 0.13 minutes
+    ## Prepare data and calculate CAR scores: 0.1 minutes
     ## 
     ## Calculating models of with 1 input vectors.
     ## Define models: 0.03 minutes
-    ## Calculate 9 linear models: 0.04 minutes
-    ## Clean linear models: 0.04 minutes
-    ## Total modeling time: 0.12 minutes
+    ## Calculate 9 linear models: 0.03 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.06 minutes
     ## 69264 cell-years remaining
     ## 
     ## Calculating models of with 2 input vectors.
-    ## Define models: 0.08 minutes
-    ## Calculate 24 linear models: 0.07 minutes
-    ## Clean linear models: 0.08 minutes
-    ## Total modeling time: 0.25 minutes
+    ## Define models: 0.03 minutes
+    ## Calculate 24 linear models: 0.05 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.08 minutes
     ## 64246 cell-years remaining
     ## 
     ## Calculating models of with 3 input vectors.
-    ## Define models: 0.13 minutes
-    ## Calculate 34 linear models: 0.08 minutes
-    ## Clean linear models: 0.05 minutes
-    ## Total modeling time: 0.3 minutes
+    ## Define models: 0.03 minutes
+    ## Calculate 34 linear models: 0.05 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.09 minutes
     ## 47452 cell-years remaining
     ## 
     ## Calculating models of with 4 input vectors.
-    ## Define models: 0.13 minutes
-    ## Calculate 36 linear models: 0.07 minutes
-    ## Clean linear models: 0.06 minutes
-    ## Total modeling time: 0.3 minutes
+    ## Define models: 0.03 minutes
+    ## Calculate 36 linear models: 0.04 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.08 minutes
     ## 24085 cell-years remaining
     ## 
     ## Calculating models of with 5 input vectors.
-    ## Define models: 0.13 minutes
-    ## Calculate 27 linear models: 0.03 minutes
-    ## Clean linear models: 0.07 minutes
-    ## Total modeling time: 0.27 minutes
+    ## Define models: 0.02 minutes
+    ## Calculate 27 linear models: 0.02 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.05 minutes
     ## 10839 cell-years remaining
     ## 
     ## Calculating models of with 6 input vectors.
-    ## Define models: 0.13 minutes
+    ## Define models: 0.02 minutes
     ## Calculate 12 linear models: 0.01 minutes
-    ## Clean linear models: 0.01 minutes
-    ## Total modeling time: 0.18 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.04 minutes
     ## 
-    ## Total Modeling Time: 1.423628 minutes
+    ## Total Modeling Time: 0.4005835 minutes
     ## 
-    ## Optimizing models: 0.1 minutes
+    ## Optimizing models: 0.04 minutes
+
+    ## Warning: distinct() does not fully support columns of type `list`.
+    ## List elements are compared by reference, see ?distinct for details.
+    ## This affects the following columns:
+    ## - `model`
 
 ``` r
 # Generate predictions and uncertainty (and plot location means in uncertainty)
@@ -352,66 +363,72 @@ mvnp_prism
 test.raster <- paleocar_models(predictands = mvnp_prism,
                                chronologies = itrdb,
                                calibration.years = 1924:1983,
-                               prediction.years = 1:2000,
+                               prediction.years = 600:1299,
                                verbose = T)
 ```
 
     ## Calculating PaleoCAR models
     ## 
-    ## Prepare data and calculate CAR scores: 0.14 minutes
+    ## Prepare data and calculate CAR scores: 0.1 minutes
     ## 
     ## Calculating models of with 1 input vectors.
-    ## Define models: 0.04 minutes
-    ## Calculate 9 linear models: 0.04 minutes
-    ## Clean linear models: 0.03 minutes
-    ## Total modeling time: 0.12 minutes
-    ## 76752 cell-years remaining
+    ## Define models: 0.01 minutes
+    ## Calculate 5 linear models: 0.02 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.04 minutes
+    ## 11856 cell-years remaining
     ## 
     ## Calculating models of with 2 input vectors.
-    ## Define models: 0.09 minutes
-    ## Calculate 24 linear models: 0.07 minutes
-    ## Clean linear models: 0.08 minutes
-    ## Total modeling time: 0.26 minutes
-    ## 71734 cell-years remaining
+    ## Define models: 0.01 minutes
+    ## Calculate 12 linear models: 0.04 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.05 minutes
+    ## 6838 cell-years remaining
     ## 
     ## Calculating models of with 3 input vectors.
-    ## Define models: 0.12 minutes
-    ## Calculate 34 linear models: 0.07 minutes
-    ## Clean linear models: 0.05 minutes
-    ## Total modeling time: 0.29 minutes
-    ## 53999 cell-years remaining
+    ## Define models: 0.01 minutes
+    ## Calculate 16 linear models: 0.03 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.05 minutes
+    ## 2361 cell-years remaining
     ## 
     ## Calculating models of with 4 input vectors.
-    ## Define models: 0.14 minutes
-    ## Calculate 36 linear models: 0.06 minutes
-    ## Clean linear models: 0.06 minutes
-    ## Total modeling time: 0.3 minutes
-    ## 28331 cell-years remaining
+    ## Define models: 0.01 minutes
+    ## Calculate 14 linear models: 0.02 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.03 minutes
+    ## 615 cell-years remaining
     ## 
     ## Calculating models of with 5 input vectors.
-    ## Define models: 0.14 minutes
-    ## Calculate 27 linear models: 0.03 minutes
-    ## Clean linear models: 0.08 minutes
-    ## Total modeling time: 0.29 minutes
-    ## 13369 cell-years remaining
+    ## Define models: 0.01 minutes
+    ## Calculate 7 linear models: 0.01 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.02 minutes
+    ## 105 cell-years remaining
     ## 
     ## Calculating models of with 6 input vectors.
-    ## Define models: 0.15 minutes
-    ## Calculate 12 linear models: 0.01 minutes
-    ## Clean linear models: 0.01 minutes
-    ## Total modeling time: 0.21 minutes
+    ## Define models: 0.01 minutes
+    ## Calculate 3 linear models: 0 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.02 minutes
     ## 
-    ## Total Modeling Time: 1.462857 minutes
+    ## Total Modeling Time: 0.2213191 minutes
     ## 
-    ## Optimizing models: 0.12 minutes
+    ## Optimizing models: 0.01 minutes
+
+    ## Warning: distinct() does not fully support columns of type `list`.
+    ## List elements are compared by reference, see ?distinct for details.
+    ## This affects the following columns:
+    ## - `model`
 
 ``` r
 # Generate predictions and errors
 test.raster.predictions <- predict_paleocar_models(models = test.raster,
                                                    prediction.years = 600:1299)
 
-  
-raster::plot(test.raster.predictions$Prediction[["X1200"]])
+test.raster.predictions$Prediction %>%
+  raster::mean() %>%
+  raster::plot()
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
@@ -426,6 +443,146 @@ other ones (e.g., `meanVar = "chained"`).
 
 ``` r
 # Generate models and perform the reconstruction and error predictions.
+
+mvnp_models <- paleocar_models(predictands = mvnp_prism,
+                       label = "mvnp_prism",
+                       chronologies = itrdb,
+                       calibration.years = 1924:1983,
+                       prediction.years = 600:1299,
+                       out.dir = testDir,
+                       force.redo = T,
+                       verbose = T)
+```
+
+    ## Calculating PaleoCAR models
+    ## 
+    ## Prepare data and calculate CAR scores: 0.1 minutes
+    ## 
+    ## Calculating models of with 1 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 5 linear models: 0.02 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.04 minutes
+    ## 11856 cell-years remaining
+    ## 
+    ## Calculating models of with 2 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 12 linear models: 0.03 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.05 minutes
+    ## 6838 cell-years remaining
+    ## 
+    ## Calculating models of with 3 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 16 linear models: 0.03 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.05 minutes
+    ## 2361 cell-years remaining
+    ## 
+    ## Calculating models of with 4 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 14 linear models: 0.02 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.03 minutes
+    ## 615 cell-years remaining
+    ## 
+    ## Calculating models of with 5 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 7 linear models: 0.01 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.02 minutes
+    ## 105 cell-years remaining
+    ## 
+    ## Calculating models of with 6 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 3 linear models: 0 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.02 minutes
+    ## 
+    ## Total Modeling Time: 0.2187503 minutes
+    ## 
+    ## Optimizing models: 0.01 minutes
+
+    ## Warning: distinct() does not fully support columns of type `list`.
+    ## List elements are compared by reference, see ?distinct for details.
+    ## This affects the following columns:
+    ## - `model`
+
+``` r
+mvnp_recon <- paleocar(models = mvnp_models,
+                       predictands = mvnp_prism,
+                       label = "mvnp_prism",
+                       chronologies = itrdb,
+                       calibration.years = 1924:1983,
+                       prediction.years = 600:1299,
+                       out.dir = testDir,
+                       force.redo = T,
+                       verbose = T)
+```
+
+    ## 
+    ## Calculating all models
+    ## Calculating PaleoCAR models
+    ## 
+    ## Prepare data and calculate CAR scores: 0.1 minutes
+    ## 
+    ## Calculating models of with 1 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 5 linear models: 0.02 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.04 minutes
+    ## 11856 cell-years remaining
+    ## 
+    ## Calculating models of with 2 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 12 linear models: 0.03 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.05 minutes
+    ## 6838 cell-years remaining
+    ## 
+    ## Calculating models of with 3 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 16 linear models: 0.03 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.05 minutes
+    ## 2361 cell-years remaining
+    ## 
+    ## Calculating models of with 4 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 14 linear models: 0.02 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.03 minutes
+    ## 615 cell-years remaining
+    ## 
+    ## Calculating models of with 5 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 7 linear models: 0.01 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.02 minutes
+    ## 105 cell-years remaining
+    ## 
+    ## Calculating models of with 6 input vectors.
+    ## Define models: 0.01 minutes
+    ## Calculate 3 linear models: 0 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.02 minutes
+    ## 
+    ## Total Modeling Time: 0.2210963 minutes
+    ## 
+    ## Optimizing models: 0.01 minutes
+
+    ## Warning: distinct() does not fully support columns of type `list`.
+    ## List elements are compared by reference, see ?distinct for details.
+    ## This affects the following columns:
+    ## - `model`
+
+    ## 
+    ## Generating prediction
+
+    ## 
+    ## The entire reconstruction took 0.64 minutes
+
+``` r
 mvnp_recon <- paleocar(predictands = mvnp_prism,
                        label = "mvnp_prism",
                        chronologies = itrdb,
@@ -440,57 +597,63 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
     ## Calculating all models
     ## Calculating PaleoCAR models
     ## 
-    ## Prepare data and calculate CAR scores: 0.17 minutes
+    ## Prepare data and calculate CAR scores: 0.1 minutes
     ## 
     ## Calculating models of with 1 input vectors.
-    ## Define models: 0.05 minutes
-    ## Calculate 9 linear models: 0.04 minutes
-    ## Clean linear models: 0.03 minutes
-    ## Total modeling time: 0.13 minutes
-    ## 76752 cell-years remaining
+    ## Define models: 0.01 minutes
+    ## Calculate 5 linear models: 0.02 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.04 minutes
+    ## 11856 cell-years remaining
     ## 
     ## Calculating models of with 2 input vectors.
-    ## Define models: 0.1 minutes
-    ## Calculate 24 linear models: 0.07 minutes
-    ## Clean linear models: 0.1 minutes
-    ## Total modeling time: 0.29 minutes
-    ## 71734 cell-years remaining
+    ## Define models: 0.01 minutes
+    ## Calculate 12 linear models: 0.04 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.06 minutes
+    ## 6838 cell-years remaining
     ## 
     ## Calculating models of with 3 input vectors.
-    ## Define models: 0.13 minutes
-    ## Calculate 34 linear models: 0.08 minutes
-    ## Clean linear models: 0.06 minutes
-    ## Total modeling time: 0.31 minutes
-    ## 53999 cell-years remaining
+    ## Define models: 0.02 minutes
+    ## Calculate 16 linear models: 0.03 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.05 minutes
+    ## 2361 cell-years remaining
     ## 
     ## Calculating models of with 4 input vectors.
-    ## Define models: 0.15 minutes
-    ## Calculate 36 linear models: 0.06 minutes
-    ## Clean linear models: 0.07 minutes
-    ## Total modeling time: 0.32 minutes
-    ## 28331 cell-years remaining
+    ## Define models: 0.01 minutes
+    ## Calculate 14 linear models: 0.02 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.04 minutes
+    ## 615 cell-years remaining
     ## 
     ## Calculating models of with 5 input vectors.
-    ## Define models: 0.15 minutes
-    ## Calculate 27 linear models: 0.03 minutes
-    ## Clean linear models: 0.05 minutes
-    ## Total modeling time: 0.27 minutes
-    ## 13369 cell-years remaining
+    ## Define models: 0.01 minutes
+    ## Calculate 7 linear models: 0.01 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.03 minutes
+    ## 105 cell-years remaining
     ## 
     ## Calculating models of with 6 input vectors.
-    ## Define models: 0.18 minutes
-    ## Calculate 12 linear models: 0.01 minutes
-    ## Clean linear models: 0.01 minutes
-    ## Total modeling time: 0.24 minutes
+    ## Define models: 0.01 minutes
+    ## Calculate 3 linear models: 0 minutes
+    ## Clean linear models: 0 minutes
+    ## Total modeling time: 0.02 minutes
     ## 
-    ## Total Modeling Time: 1.565232 minutes
+    ## Total Modeling Time: 0.2312807 minutes
     ## 
-    ## Optimizing models: 0.13 minutes
+    ## Optimizing models: 0.01 minutes
+
+    ## Warning: distinct() does not fully support columns of type `list`.
+    ## List elements are compared by reference, see ?distinct for details.
+    ## This affects the following columns:
+    ## - `model`
+
     ## 
     ## Generating prediction
 
     ## 
-    ## The entire reconstruction took 42.94 minutes
+    ## The entire reconstruction took 0.61 minutes
 
 ``` r
 # Examine the structure of the output
@@ -500,16 +663,15 @@ str(mvnp_recon,
 
     ## List of 2
     ##  $ models     :List of 5
-    ##   ..$ models               :Classes 'tbl_df', 'tbl' and 'data.frame':    5527 obs. of  7 variables:
-    ##   .. ..- attr(*, ".internal.selfref")=<externalptr> 
-    ##   .. ..- attr(*, "sorted")= chr [1:2] "cell" "year"
+    ##   ..$ models               :Classes 'tbl_df', 'tbl' and 'data.frame':    3115 obs. of  7 variables:
     ##   ..$ predictands          :Formal class 'RasterStack' [package "raster"] with 11 slots
     ##   ..$ predictor.matrix     : num [1:60, 1:120] 1.315 0.883 1.354 1.011 1.354 ...
     ##   .. ..- attr(*, "dimnames")=List of 2
-    ##   ..$ reconstruction.matrix: num [1:2000, 1:120] NA NA NA NA NA NA NA NA NA NA ...
+    ##   ..$ reconstruction.matrix: num [1:700, 1:120] NA NA NA NA NA NA NA NA NA NA ...
     ##   .. ..- attr(*, "dimnames")=List of 2
     ##   ..$ carscores            :Classes 'tbl_df', 'tbl' and 'data.frame':    74880 obs. of  3 variables:
-    ##  $ predictions:List of 3
+    ##  $ predictions:List of 4
+    ##   ..$ cell        :Formal class 'RasterBrick' [package "raster"] with 12 slots
     ##   ..$ Prediction  :Formal class 'RasterBrick' [package "raster"] with 12 slots
     ##   ..$ CI Deviation:Formal class 'RasterBrick' [package "raster"] with 12 slots
     ##   ..$ PI Deviation:Formal class 'RasterBrick' [package "raster"] with 12 slots
@@ -535,7 +697,7 @@ mvnp_recon <- paleocar(predictands = mvnp_prism,
     ## Generating prediction
 
     ## 
-    ## The entire reconstruction took 0.01 minutes
+    ## The entire reconstruction took 0 minutes
 
 #### Plot results
 
@@ -546,3 +708,19 @@ mvnp_recon$predictions$Prediction %>%
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+``` r
+mvnp_recon$predictions$`CI Deviation` %>%
+  raster::mean() %>%
+  raster::plot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-8-2.png)<!-- -->
+
+``` r
+mvnp_recon$predictions$`PI Deviation` %>%
+  raster::mean() %>%
+  raster::plot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-8-3.png)<!-- -->
