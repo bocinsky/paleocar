@@ -70,33 +70,29 @@ predict_mlm <-
     if (!is.null(offset)) 
       pred <- pred + offset
     
-    ci_error %<>%
-      magrittr::set_colnames(colnames(pred)) %>%
-      magrittr::set_rownames(rownames(pred)) %>%
-      as.data.frame() %>%
-      tibble::rownames_to_column(var = "year") %>%
-      tidyr::gather(cell,`CI Deviation`,-year)
-    
-    pi_error %<>%
-      magrittr::set_colnames(colnames(pred)) %>%
-      magrittr::set_rownames(rownames(pred)) %>%
-      as.data.frame() %>%
-      tibble::rownames_to_column(var = "year") %>%
-      tidyr::gather(cell,`PI Deviation`,-year)
-    
-    pred %<>%
-      as.data.frame() %>%
-      tibble::rownames_to_column(var = "year") %>%
-      tidyr::gather(cell,Prediction,-year)
+    ci_error <- ci_error[,!duplicated(colnames(pred))]
+    pi_error <- pi_error[,!duplicated(colnames(pred))]
+    pred <- pred[,!duplicated(colnames(pred))]
     
     return(
       pred %>%
-        dplyr::full_join(ci_error,
-                         by = c("cell","year")) %>%
-        dplyr::full_join(pi_error,
-                         by = c("cell","year")) %>%
+        as.data.frame() %>%
+        tibble::rownames_to_column(var = "year") %>%
+        tidyr::gather(cell,Prediction,-year) %>%
+        dplyr::bind_cols(    
+          tibble::tibble(
+            `CI Deviation` = 
+              ci_error %>% 
+              as.vector(),
+            `PI Deviation` = 
+              pi_error %>% 
+              as.vector()
+          )
+        ) %>%
         tibble::as_tibble() %>%
-        dplyr::mutate_at(.vars = dplyr::vars(cell, year), as.integer)
+        dplyr::mutate_at(.vars = dplyr::vars(cell, year), as.integer) %>%
+        dplyr::select(cell, year, dplyr::everything()) %>%
+        dplyr::arrange(cell, year)
     ) 
   }
 

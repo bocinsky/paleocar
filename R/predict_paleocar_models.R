@@ -39,6 +39,7 @@ predict_paleocar_models <- function(models,
   
   models$models %<>%
     tibble::as_tibble() %>%
+    dplyr::select(cell, year, model) %>%
     dplyr::group_by(cell) %>%
     dplyr::mutate(
       endYear = c(year[-1] - 1, 
@@ -52,14 +53,15 @@ predict_paleocar_models <- function(models,
         endYear > tail(prediction.years, 1),
         tail(prediction.years, 1),
         endYear
-      )) %>%
+      ),
+      endYear = as.integer(endYear)) %>%
     dplyr::filter(!(year > tail(prediction.years, 1)),
                   !(endYear < head(prediction.years, 1))) %>%
     dplyr::ungroup() %>%
     dplyr::arrange(cell, year)
   
   my_predict <- function(x){
-
+    
     # x <- models$models %>%
     #   split(models$models$model %>% purrr::map_chr(stringr::str_c, collapse = ";")) %>%
     #   magrittr::extract2(1)
@@ -111,13 +113,15 @@ predict_paleocar_models <- function(models,
                                          `PI Deviation` = pi),
                          by = c("cell","year"))
     } else {
-      x %>%
+      x %<>%
         dplyr::select(cell, year, endYear) %>%
         dplyr::rowwise() %>%
         dplyr::mutate(year = list(year:endYear)) %>%
         dplyr::select(cell, year) %>%
         tidyr::unnest() %>%
-        dplyr::mutate_at(.vars = dplyr::vars(cell, year), as.integer) %>%
+        dplyr::arrange(cell, year)
+      
+      x %>%
         dplyr::left_join(predict_mlm(object = lms, 
                                      newdata = models$reconstruction.matrix[, x$model[[1]], drop = F] %>% 
                                        as.data.frame() %>%
@@ -131,7 +135,8 @@ predict_paleocar_models <- function(models,
   
   out <- 
     models$models %>%
-    split(models$models$model %>% purrr::map_chr(stringr::str_c, collapse = ";")) %>%
+    split(models$models$model %>% 
+            purrr::map_chr(stringr::str_c, collapse = ";")) %>%
     purrr::map(my_predict) %>%
     dplyr::bind_rows() %>%
     dplyr::arrange(cell, year)

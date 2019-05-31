@@ -569,8 +569,8 @@ paleocar_models <- function(chronologies,
       tibble::as_tibble() %>%
       dplyr::mutate(model = model %>% 
                       purrr::map(sort)) %>%
-      dplyr::distinct() %>%
-      dplyr::arrange(cell, year),
+      dplyr::mutate_at(.vars = dplyr::vars(cell, year, numPreds), as.integer) %>%
+      dplyr::arrange(cell, year), 
     predictands = predictands,
     predictor.matrix = predictor.matrix,
     reconstruction.matrix = reconstruction.matrix,
