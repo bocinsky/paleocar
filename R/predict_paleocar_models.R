@@ -62,10 +62,10 @@ predict_paleocar_models <- function(models,
   
   my_predict <- function(x){
     
-    x <- models$models %>%
-      split(models$models$model %>% purrr::map_chr(stringr::str_c, collapse = ";")) %>%
-      magrittr::extract2(c("CO511RA","CO631RA", "NM560RA") %>%
-                           stringr::str_c(collapse = ";"))
+    # x <- models$models %>%
+    #   split(models$models$model %>% purrr::map_chr(stringr::str_c, collapse = ";")) %>%
+    #   magrittr::extract2(c("CO511RA","CO631RA", "NM560RA") %>%
+    #                        stringr::str_c(collapse = ";"))
     
     terms <- models$predictor.matrix[, x$model[[1]], drop = F] %>%
       as.data.frame()
