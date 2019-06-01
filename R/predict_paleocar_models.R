@@ -220,7 +220,8 @@ predict_paleocar_models <- function(models,
       dplyr::mutate(data = magrittr::set_names(data, year)) %$%
       data %>%
       purrr::transpose() %>%
-      purrr::map(raster::brick)
+      purrr::map(raster::brick) %>%
+      purrr::map(raster::readAll)
   }
   
   # out %>%
