@@ -70,9 +70,9 @@ predict_mlm <-
     if (!is.null(offset)) 
       pred <- pred + offset
     
-    ci_error <- ci_error[,!duplicated(colnames(pred))]
-    pi_error <- pi_error[,!duplicated(colnames(pred))]
-    pred <- pred[,!duplicated(colnames(pred))]
+    ci_error <- ci_error[, !duplicated(colnames(pred)), drop = FALSE]
+    pi_error <- pi_error[, !duplicated(colnames(pred)), drop = FALSE]
+    pred <- pred[, !duplicated(colnames(pred)), drop = FALSE]
     
     return(
       pred %>%
