@@ -62,9 +62,10 @@ predict_paleocar_models <- function(models,
   
   my_predict <- function(x){
     
-    # x <- models$models %>%
-    #   split(models$models$model %>% purrr::map_chr(stringr::str_c, collapse = ";")) %>%
-    #   magrittr::extract2(1)
+    x <- models$models %>%
+      split(models$models$model %>% purrr::map_chr(stringr::str_c, collapse = ";")) %>%
+      magrittr::extract2(c("CO511RA","CO631RA", "NM560RA") %>%
+                           stringr::str_c(collapse = ";"))
     
     terms <- models$predictor.matrix[, x$model[[1]], drop = F] %>%
       as.data.frame()
@@ -103,15 +104,14 @@ predict_paleocar_models <- function(models,
                              "ci.lwr",
                              "pi.lwr"
                            )) %>%
-                           dplyr::mutate(cell = 1,
-                                         year = as.integer(year),
+                           dplyr::mutate(year = as.integer(year),
                                          ci = fit - ci.lwr,
                                          pi = fit - pi.lwr) %>%
-                           dplyr::select(cell, year, fit, ci, pi) %>%
+                           dplyr::select(year, fit, ci, pi) %>%
                            dplyr::rename(Prediction = fit,
                                          `CI Deviation` = ci,
                                          `PI Deviation` = pi),
-                         by = c("cell","year"))
+                         by = c("year"))
     } else {
       x %>%
         dplyr::select(cell, year, endYear) %>%
