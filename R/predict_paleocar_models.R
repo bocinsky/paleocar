@@ -206,7 +206,7 @@ predict_paleocar_models <- function(models,
   if (class(models$predictands) %in% c("RasterBrick", "RasterStack")) {
     out %<>%
       dplyr::arrange(year, cell) %>%
-      # dplyr::select(-cell) %>%
+      dplyr::select(-cell) %>%
       tidyr::nest(-year) %>%
       dplyr::rowwise() %>%
       dplyr::mutate(data = data %>% 
