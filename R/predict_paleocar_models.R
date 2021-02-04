@@ -217,7 +217,7 @@ predict_paleocar_models <- function(models,
                       magrittr::set_names(.,.) %>%
                       purrr::map(function(x){
                         out_rast <- raster::raster(models$predictands)
-                        out_rast[data[[x]]] <- data$cell
+                        out_rast[data$cell] <- data[[x]]
                         out_rast
                       }) %>% 
                       list()) %>% 
