@@ -203,23 +203,29 @@ predict_paleocar_models <- function(models,
   # 
   
   if (class(models$predictands) %in% c("RasterBrick", "RasterStack")) {
-    out %<>%
+    out %<>% 
       dplyr::arrange(year, cell) %>%
-      dplyr::select(-cell) %>%
-      tidyr::nest(-year) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(data = data %>% 
-                      purrr::map(.f = function(x){
-                        raster::setValues(raster::raster(models$predictands), 
-                                          values = x)
-                      }) %>%
-                      list()
-      ) %>%
+      tidyr::nest(data = c(cell, 
+                           Prediction, 
+                           `CI Deviation`, 
+                           `PI Deviation`)) %>% 
+      dplyr::rowwise() %>% 
+      dplyr::mutate(data = 
+                      c("Prediction",
+                        "CI Deviation",
+                        "PI Deviation") %>%
+                      magrittr::set_names(.,.) %>%
+                      purrr::map(function(x){
+                        out_rast <- raster::raster(models$predictands)
+                        out_rast[data[[x]]] <- data$cell
+                        out_rast
+                      }) %>% 
+                      list()) %>% 
       dplyr::ungroup() %>%
-      dplyr::mutate(data = magrittr::set_names(data, year)) %$%
-      data %>%
-      purrr::transpose() %>%
-      purrr::map(raster::brick) %>%
+      dplyr::mutate(data = magrittr::set_names(data, year)) %$% 
+      data %>% 
+      purrr::transpose() %>% 
+      purrr::map(raster::brick) %>% 
       purrr::map(raster::readAll)
   }
   

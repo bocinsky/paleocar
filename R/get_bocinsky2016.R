@@ -6,7 +6,7 @@ globalVariables(c("tile", "type"))
 #' Exploration and exploitation in the macrohistory of the pre-Hispanic Pueblo Southwest. 
 #' Science Advances 2:e1501532.
 #'
-#' @param template A Spatial* or Raster* object from which to define the area of interest.
+#' @param template A simple features object from which to define the area of interest.
 #' If omitted, download entire reconstruction.
 #' @param label A character string naming the study area.
 #' @param raw.dir A character string indicating where raw downloaded files should be put.
@@ -28,8 +28,8 @@ globalVariables(c("tile", "type"))
 #' @export
 get_bocinsky2016 <- function(template = NULL,
                              label = "paleocar",
-                             raw.dir = "./RAW/PALEOCAR/",
-                             extraction.dir = paste0("./EXTRACTIONS/", label, "/PALEOCAR/"),
+                             raw.dir = paste0(tempdir(), "/FedData/raw/ssurgo"),
+                             extraction.dir = paste0(tempdir(), "/FedData/"),
                              prcp_threshold = 300,
                              gdd_threshold = 1800,
                              years = 1:2000,
