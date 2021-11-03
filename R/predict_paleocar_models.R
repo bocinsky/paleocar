@@ -1,3 +1,5 @@
+globalVariables(c("fit","lwr","Prediction","PI Deviation"))
+
 #' Get a RasterBrick reconstruction from a PaleoCAR batch model
 #'
 #' This generates a reconstruction RasterBrick from a PaleoCAR batch model.
@@ -80,11 +82,11 @@ predict_paleocar_models <- function(models,
         tidyr::unnest(cols = c(year)) %>%
         dplyr::mutate_at(.vars = dplyr::vars(cell, year), as.integer) %>%
         dplyr::left_join(
-          predict(lms,
+          stats::predict(lms,
                   newdata = 
                     models$reconstruction.matrix[, x$model[[1]], drop = F] %>% 
                     as.data.frame() %>%
-                    na.omit(),
+                    stats::na.omit(),
                   interval = "prediction")[, 1:2, drop = FALSE] %>%
             tibble::as_tibble(rownames = "year") %>%
             dplyr::mutate(year = as.integer(year),
@@ -125,7 +127,7 @@ predict_paleocar_models <- function(models,
                       newdata = 
                         models$reconstruction.matrix[, x$model[[1]], drop = F] %>% 
                         as.data.frame() %>%
-                        na.omit()
+                        stats::na.omit()
           ),
           by = c("cell","year")) %>%
         # dplyr::mutate(cell = as.character(cell)) %>%

@@ -1,3 +1,5 @@
+globalVariables(c("Prediction"))
+
 predict_mlm <- 
   function (object, 
             newdata, 
