@@ -144,9 +144,9 @@ test.prediction %>%
   dplyr::mutate(cell = as.factor(cell)) %>%
   dplyr::filter(cell %in% c(1,200,400,600)) %>%
   ggplot(aes(x = year,
-             y = Prediction)) +
-  geom_ribbon(aes(ymin = Prediction - `PI Deviation`,
-                  ymax = Prediction + `PI Deviation`,
+             y = `Prediction (scaled)`)) +
+  geom_ribbon(aes(ymin = `Prediction (scaled)` - `PI Deviation (scaled)`,
+                  ymax = `Prediction (scaled)` + `PI Deviation (scaled)`,
                   fill = cell),
               color = NA) +
   geom_line(size = 0.2) +
@@ -172,9 +172,13 @@ test.raster <- paleocar_models(predictands = mvnp_prism,
 test.raster.predictions <- predict_paleocar_models(models = test.raster,
                                                    prediction.years = 600:1299)
 
-test.raster.predictions$Prediction %>%
+test.raster.predictions$`Prediction (scaled)` %>%
   raster::mean() %>%
   raster::plot()
+
+# test.raster.predictions$`PI Deviation (scaled)` %>%
+#   raster::mean() %>%
+#   raster::plot()
 
 ```
 
@@ -240,11 +244,15 @@ mvnp_recon$predictions$Prediction %>%
   raster::mean() %>%
   raster::plot()
 
-mvnp_recon$predictions$`CI Deviation` %>%
+mvnp_recon$predictions$`PI Deviation` %>%
   raster::mean() %>%
   raster::plot()
 
-mvnp_recon$predictions$`PI Deviation` %>%
+mvnp_recon$predictions$`Prediction (scaled)` %>%
+  raster::mean() %>%
+  raster::plot()
+
+mvnp_recon$predictions$`PI Deviation (scaled)` %>%
   raster::mean() %>%
   raster::plot()
 ```

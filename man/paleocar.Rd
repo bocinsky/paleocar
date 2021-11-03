@@ -4,9 +4,17 @@
 \alias{paleocar}
 \title{Fit PaleoCAR models to a RasterBrick of predictands, and generate prediction and uncertainty RasterBricks.}
 \usage{
-paleocar(chronologies, predictands, calibration.years,
-  prediction.years = NULL, label, out.dir = "./OUTPUT/",
-  force.redo = F, verbose = F, ...)
+paleocar(
+  chronologies,
+  predictands,
+  calibration.years,
+  prediction.years = NULL,
+  label,
+  out.dir = "./OUTPUT/",
+  force.redo = F,
+  verbose = F,
+  ...
+)
 }
 \arguments{
 \item{chronologies}{An ITRDB object, as in from FedData::get_itrdb.}

@@ -4,7 +4,9 @@
 \name{mvnp}
 \alias{mvnp}
 \title{MVNP Spatial Polygon}
-\format{SpatialPolygonsDataFrame}
+\format{
+SpatialPolygonsDataFrame
+}
 \source{
 \url{http://nrdata.nps.gov/programs/Lands/meve_tracts.zip}
 }

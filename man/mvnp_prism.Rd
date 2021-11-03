@@ -4,7 +4,9 @@
 \name{mvnp_prism}
 \alias{mvnp_prism}
 \title{PRISM water_year precipitation}
-\format{RasterStack}
+\format{
+RasterStack
+}
 \source{
 \url{http://www.prism.oregonstate.edu/}
 }

@@ -4,8 +4,13 @@
 \alias{paleocar_models_simple}
 \title{Fit PaleoCAR models to a single predictand}
 \usage{
-paleocar_models_simple(predictands, chronologies, calibration.years,
-  prediction.years = NULL, verbose = F)
+paleocar_models_simple(
+  predictands,
+  chronologies,
+  calibration.years,
+  prediction.years = NULL,
+  verbose = F
+)
 }
 \arguments{
 \item{predictands}{A numeric vector of the predictand (response) variable.}

@@ -2,8 +2,8 @@ Package: paleocar
 Type: Package
 Title: Paleoclimate Reconstruction from Tree Rings using Correlation Adjusted
     corRelation
-Version: 4.0.1
-Date: 2019-5-29
+Version: 3.0.0
+Date: 2021-11-02
 Author: R. Kyle Bocinsky <bocinsky@gmail.com>
 Maintainer: R. Kyle Bocinsky <bocinsky@gmail.com>
 Description: Functions to perform spatio-temporal paleoclimate reconstruction
@@ -15,27 +15,29 @@ Description: Functions to perform spatio-temporal paleoclimate reconstruction
     by minimizing the corrected Akaike's Information Criterion.
 License: MIT + file LICENSE
 Depends: R (>= 3.1)
-Imports: FedData,
-          data.table,
-          care,
-          forecast,
-          zoo,
-          parallel,
-          matrixStats,
-          raster,
-          XML,
-          foreach,
-          sp,
-          httr,
-          magrittr,
-          readr,
-          purrr,
-          broom,
-          strip,
-          dplyr,
-          tibble,
-          tidyr
+Imports: 
+    FedData,
+    data.table,
+    care,
+    forecast,
+    zoo,
+    parallel,
+    matrixStats,
+    raster,
+    XML,
+    foreach,
+    sp,
+    httr,
+    magrittr,
+    readr,
+    purrr,
+    broom,
+    strip,
+    dplyr,
+    tibble,
+    tidyr,
+    stringr
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.2
 Suggests: testthat
 Encoding: UTF-8

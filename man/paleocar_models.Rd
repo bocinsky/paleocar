@@ -4,8 +4,15 @@
 \alias{paleocar_models}
 \title{Fit PaleoCAR models to a (potentially large) set of predictands}
 \usage{
-paleocar_models(chronologies, predictands, calibration.years,
-  prediction.years = NULL, min.width = NULL, verbose = F, ...)
+paleocar_models(
+  chronologies,
+  predictands,
+  calibration.years,
+  prediction.years = NULL,
+  min.width = NULL,
+  verbose = F,
+  ...
+)
 }
 \arguments{
 \item{chronologies}{A matrix of tree ring chronologies, indexed annually.

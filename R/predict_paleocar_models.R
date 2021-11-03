@@ -18,10 +18,11 @@ predict_paleocar_models <- function(models,
   if (!all(prediction.years %in% as.numeric(row.names(models$reconstruction.matrix)))) {
     warning('Some specified years not valid for the models provided. Truncating to modeled years.')
     prediction.years <-
-      prediction.years[prediction.years %in% as.numeric(rownames(models[['reconstruction.matrix']]))]
+      prediction.years[prediction.years %in% 
+                         as.numeric(rownames(models[['reconstruction.matrix']]))]
   }
   
-  if (class(models$predictands) %in% c("RasterBrick", "RasterStack")) {
+  if (class(models$predictands)[[1]] %in% c("RasterBrick", "RasterStack")) {
     null.cells <- which(is.na(raster::getValues(models$predictands[[1]])))
     predictand.matrix <- t(raster::values(models$predictands))
     colnames(predictand.matrix) <-
@@ -62,13 +63,9 @@ predict_paleocar_models <- function(models,
   
   my_predict <- function(x){
     
-    # x <- models$models %>%
-    #   split(models$models$model %>% purrr::map_chr(stringr::str_c, collapse = ";")) %>%
-    #   magrittr::extract2(c("CO607RA;CO614RA;CO621RA;CO622RA;CO625RA;CO626RA;CO637RA"))
-    
     terms <- models$predictor.matrix[, x$model[[1]], drop = F] %>%
       as.data.frame()
-    response <- predictand.matrix[, x$cell, drop = F]
+    response <- predictand.matrix[, unique(x$cell), drop = F]
     
     lms <- lm(response ~ .,
               data = terms)
@@ -80,158 +77,98 @@ predict_paleocar_models <- function(models,
         dplyr::rowwise() %>%
         dplyr::mutate(year = list(year:endYear)) %>%
         dplyr::select(cell, year) %>%
-        tidyr::unnest() %>%
+        tidyr::unnest(cols = c(year)) %>%
         dplyr::mutate_at(.vars = dplyr::vars(cell, year), as.integer) %>%
-        dplyr::left_join(predict(lms, 
-                                 newdata = models$reconstruction.matrix[, x$model[[1]], drop = F] %>% 
-                                   as.data.frame() %>%
-                                   na.omit(), interval = "confidence")[, 1:2, drop = FALSE] %>%
-                           as.data.frame() %>%
-                           tibble::rownames_to_column("year") %>%
-                           dplyr::full_join(predict(lms,
-                                                    newdata = models$reconstruction.matrix[, x$model[[1]], drop = F] %>% 
-                                                      as.data.frame() %>%
-                                                      na.omit(),
-                                                    interval = "prediction")[, 2, drop = FALSE] %>%
-                                              as.data.frame() %>%
-                                              tibble::rownames_to_column("year"),
-                                            by = "year") %>%
-                           tibble::as_tibble() %>%
-                           magrittr::set_names(c(
-                             "year",
-                             "fit",
-                             "ci.lwr",
-                             "pi.lwr"
-                           )) %>%
-                           dplyr::mutate(year = as.integer(year),
-                                         ci = fit - ci.lwr,
-                                         pi = fit - pi.lwr) %>%
-                           dplyr::select(year, fit, ci, pi) %>%
-                           dplyr::rename(Prediction = fit,
-                                         `CI Deviation` = ci,
-                                         `PI Deviation` = pi),
-                         by = c("year"))
+        dplyr::left_join(
+          predict(lms,
+                  newdata = 
+                    models$reconstruction.matrix[, x$model[[1]], drop = F] %>% 
+                    as.data.frame() %>%
+                    na.omit(),
+                  interval = "prediction")[, 1:2, drop = FALSE] %>%
+            tibble::as_tibble(rownames = "year") %>%
+            dplyr::mutate(year = as.integer(year),
+                          pi = fit - lwr) %>%
+            dplyr::select(year,
+                          Prediction = fit,
+                          `PI Deviation` = pi),
+          by = c("year")
+        ) %>%
+        dplyr::mutate(
+          `Prediction (scaled)` = 
+            mean_var_match(calib.vector = lms$model$response[,1], 
+                           out.calib.vector = lms$fitted.values, 
+                           out.vector = Prediction),
+          `PI Deviation (scaled)` = 
+            `PI Deviation` * 
+            (stats::sd(lms$model$response[,1], na.rm  = T)/
+               stats::sd(lms$fitted.values, na.rm = T))
+        )
     } else {
+      scalar <- 
+        apply(lms$model$response, FUN = sd, MARGIN = 2)/
+        apply(lms$fitted.values, FUN = sd, MARGIN = 2)
+      
+      transform <- 
+        apply(lms$model$response, FUN = mean, MARGIN = 2) -
+        (scalar * apply(lms$fitted.values, FUN = mean, MARGIN = 2))
+      
       x %>%
         dplyr::select(cell, year, endYear) %>%
         dplyr::rowwise() %>%
         dplyr::mutate(year = list(year:endYear)) %>%
         dplyr::select(cell, year) %>%
-        tidyr::unnest() %>%
+        tidyr::unnest(cols = c(year)) %>%
         dplyr::arrange(cell, year) %>%
-        dplyr::left_join(predict_mlm(object = lms, 
-                                     newdata = models$reconstruction.matrix[, x$model[[1]], drop = F] %>% 
-                                       as.data.frame() %>%
-                                       na.omit()),
-                         by = c("cell","year"))
+        dplyr::left_join(
+          predict_mlm(object = lms, 
+                      newdata = 
+                        models$reconstruction.matrix[, x$model[[1]], drop = F] %>% 
+                        as.data.frame() %>%
+                        na.omit()
+          ),
+          by = c("cell","year")) %>%
+        # dplyr::mutate(cell = as.character(cell)) %>%
+        dplyr::left_join(tibble::tibble(cell = as.integer(names(scalar)), scalar = scalar) %>% dplyr::distinct(),
+                         by = "cell") %>%
+        dplyr::left_join(tibble::tibble(cell = as.integer(names(transform)), transform = transform),
+                         by = "cell") %>%
+        dplyr::mutate(`Prediction (scaled)` = (Prediction * scalar) + transform,
+                      `PI Deviation (scaled)` = `PI Deviation` * scalar,
+                      cell = as.integer(cell)) %>%
+        dplyr::select(-scalar,
+                      -transform) %>%
+        dplyr::arrange(cell, year)
+      
     }
     
   }
   
   out <- 
     models$models %>%
-    split(models$models$model %>% 
-            purrr::map_chr(stringr::str_c, collapse = ";")) %>%
+    dplyr::arrange(year) %>%
+    dplyr::group_by(model) %>%
+    dplyr::group_split() %>%
     purrr::map(my_predict) %>%
     dplyr::bind_rows() %>%
     dplyr::arrange(cell, year)
   
   
-  
-  # 
-  # my_predict <- function(start, end, model){
-  #   
-  #   predict(model, 
-  #           newdata = models$reconstruction.matrix[rownames(models$reconstruction.matrix) %in% 
-  #                                                    (seq(start, end) %>% 
-  #                                                       as.character()),,drop = FALSE] %>%
-  #             as.data.frame(),
-  #           interval = "confidence")[, 1:2, drop = FALSE] %>%
-  #     tibble::as_tibble() %>%
-  #     cbind(predict(model,
-  #                   newdata = models$reconstruction.matrix[rownames(models$reconstruction.matrix) %in%
-  #                                                            (seq(start, end) %>%
-  #                                                               as.character()),,drop = FALSE] %>%
-  #                     as.data.frame(),
-  #                   interval = "prediction")[, 2, drop = FALSE] %>%
-  #             tibble::as_tibble()) %>%
-  #     magrittr::set_colnames(c(
-  #       "fit", 
-  #       "ci.lwr", 
-  #       "pi.lwr"
-  #     )) %>%
-  #     tibble::as_tibble() %>%
-  #     dplyr::mutate(year = seq(start, end),
-  #                   ci = fit - ci.lwr,
-  #                   pi = fit - pi.lwr) %>%
-  #     dplyr::select(year, fit, ci, pi) %>%
-  #     dplyr::rename(Prediction = fit,
-  #                   `CI Deviation` = ci,
-  #                   `PI Deviation` = pi)
-  #   
-  # }
-  # 
-  # out <- 
-  #   models$models %>%
-  #   tibble::as_tibble() %>%
-  #   dplyr::group_by(cell) %>%
-  #   dplyr::mutate(
-  #     endYear = c(year[-1] - 1, 
-  #                 tail(prediction.years, 1)),
-  #     year = ifelse(
-  #       year < head(prediction.years, 1),
-  #       head(prediction.years, 1),
-  #       year
-  #     ),
-  #     endYear = ifelse(
-  #       endYear > tail(prediction.years, 1),
-  #       tail(prediction.years, 1),
-  #       endYear
-  #     )) %>%
-  #   dplyr::filter(!(year > tail(prediction.years, 1)),
-  #                 !(endYear < head(prediction.years, 1))) %>%
-  #   dplyr::ungroup() %>%
-  #   dplyr::rowwise() %>%
-  #   dplyr::mutate(prediction = my_predict(start = year, 
-  #                                         end = endYear, 
-  #                                         model = model) %>% 
-  #                   list()) %>%
-  #   dplyr::ungroup() %>%
-  #   dplyr::select(cell,
-  #                 prediction) %>%
-  #   tidyr::unnest(prediction)
-  # 
-  
-  if (class(models$predictands) %in% c("RasterBrick", "RasterStack")) {
+  if (class(models$predictands)[[1]] %in% c("RasterBrick", "RasterStack")) {
     out %<>% 
       dplyr::arrange(year, cell) %>%
-      tidyr::nest(data = c(cell, 
-                           Prediction, 
-                           `CI Deviation`, 
-                           `PI Deviation`)) %>% 
-      dplyr::rowwise() %>% 
-      dplyr::mutate(data = 
-                      c("Prediction",
-                        "CI Deviation",
-                        "PI Deviation") %>%
-                      magrittr::set_names(.,.) %>%
-                      purrr::map(function(x){
-                        out_rast <- raster::raster(models$predictands)
-                        out_rast[data$cell] <- data[[x]]
-                        out_rast
-                      }) %>% 
-                      list()) %>% 
-      dplyr::ungroup() %>%
-      dplyr::mutate(data = magrittr::set_names(data, year)) %$% 
-      data %>% 
-      purrr::transpose() %>% 
-      purrr::map(raster::brick) %>% 
+      dplyr::group_by(year) %>%
+      dplyr::summarise(dplyr::across(!c(cell), 
+                                     ~ list(
+                                       raster::setValues(raster::raster(models$predictands), 
+                                                         values = .x, 
+                                                         index = cell)
+                                     ))) %>%
+      dplyr::mutate(dplyr::across(!c(year), ~magrittr::set_names(.x, year))) %>%
+      dplyr::summarise(dplyr::across(!c(year), ~list(raster::brick(.x)))) %>%
+      unlist(recursive = FALSE) %>% 
       purrr::map(raster::readAll)
   }
-  
-  # out %>%
-  #   purrr::map(raster::mean) %>%
-  #   purrr::walk(raster::plot)
   
   return(out)
 }

@@ -1,7 +1,7 @@
 predict_mlm <- 
   function (object, 
             newdata, 
-            na.action = na.pass,
+            na.action = stats::na.pass,
             level = 0.95,
             ...) 
   {
@@ -10,18 +10,18 @@ predict_mlm <-
     #   stop("the 'se.fit' argument is not yet implemented for \"mlm\" objects")
     if (missing(newdata)) {
       newdata <- as.data.frame(object$model$terms)
-      X <- model.matrix(object)
+      X <- stats::model.matrix(object)
       offset <- object$offset
     } else {
-      tt <- terms(object)
-      Terms <- delete.response(tt)
-      m <- model.frame(Terms, 
+      tt <- stats::terms(object)
+      Terms <- stats::delete.response(tt)
+      m <- stats::model.frame(Terms, 
                        newdata, 
                        na.action = na.action, 
                        xlev = object$xlevels)
       if (!is.null(cl <- attr(Terms, "dataClasses"))) 
-        .checkMFClasses(cl, m)
-      X <- model.matrix(Terms, m, contrasts.arg = object$contrasts)
+        stats::.checkMFClasses(cl, m)
+      X <- stats::model.matrix(Terms, m, contrasts.arg = object$contrasts)
       offset <- if (!is.null(off.num <- attr(tt, "offset"))) 
         eval(attr(tt, "variables")[[off.num + 1]], newdata)
       else if (!is.null(object$offset)) 
@@ -37,18 +37,18 @@ predict_mlm <-
     pred <- X[, piv, drop = FALSE] %*% object$coefficients[piv, ]
     
     ## model formula
-    form <- formula(object)
+    form <- stats::formula(object)
     ## drop response (LHS)
     form[[2]] <- NULL
     ## prediction matrix
-    X <- model.matrix(form, newdata)
+    X <- stats::model.matrix(form, newdata)
     Q <- forwardsolve(t(qr.R(object$qr)), t(X))
     
     ## unscaled prediction standard error
     unscaled.se <- sqrt(colSums(Q ^ 2))
     
     # residual sum of squared errors
-    rss <- colSums(residuals(object) ^ 2)
+    rss <- colSums(stats::residuals(object) ^ 2)
     
     # mean squared error
     mse <- rss / (object$df.residual + 2)
@@ -62,15 +62,15 @@ predict_mlm <-
     ## scaled standard error of the prediction
     se.pred = sqrt(sweep((se.mean ^ 2), 2, (sigma ^ 2), "+"))
     
-    tfrac <- abs(qt((1 - level)/2, object$df.residual))
+    tfrac <- abs(stats::qt((1 - level)/2, object$df.residual))
     
-    ci_error <- se.mean * tfrac
+    # ci_error <- se.mean * tfrac
     pi_error <- se.pred * tfrac
     
     if (!is.null(offset)) 
       pred <- pred + offset
     
-    ci_error <- ci_error[, !duplicated(colnames(pred)), drop = FALSE]
+    # ci_error <- ci_error[, !duplicated(colnames(pred)), drop = FALSE]
     pi_error <- pi_error[, !duplicated(colnames(pred)), drop = FALSE]
     pred <- pred[, !duplicated(colnames(pred)), drop = FALSE]
     
@@ -81,9 +81,9 @@ predict_mlm <-
         tidyr::gather(cell,Prediction,-year) %>%
         dplyr::bind_cols(    
           tibble::tibble(
-            `CI Deviation` = 
-              ci_error %>% 
-              as.vector(),
+            # `CI Deviation` = 
+            #   ci_error %>% 
+            #   as.vector(),
             `PI Deviation` = 
               pi_error %>% 
               as.vector()

@@ -4,8 +4,11 @@
 \alias{get_reconstruction_matrix}
 \title{Get a matrix of predictors for a reconstruction}
 \usage{
-get_reconstruction_matrix(chronologies, reconstruction.years = NULL,
-  min.width = NULL)
+get_reconstruction_matrix(
+  chronologies,
+  reconstruction.years = NULL,
+  min.width = NULL
+)
 }
 \arguments{
 \item{chronologies}{A matrix of predictors to be subset.

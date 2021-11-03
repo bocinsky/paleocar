@@ -4,13 +4,15 @@
 \name{itrdb}
 \alias{itrdb}
 \title{Data from the International Tree Ring Data Bank}
-\format{list
+\format{
+list
 \describe{
   \item{metadata}{A data.table or SpatialPointsDataFrame (if makeSpatial==TRUE) of the 
   locations and names of extracted ITRDB chrononlogies}
   \item{widths}{A matrix of tree-ring widths/densities given user selection}
   \item{depths}{A matrix of tree-ring sample depths}
-}}
+}
+}
 \source{
 \url{https://www.ncdc.noaa.gov/data-access/paleoclimatology-data/datasets/tree-ring}
 }

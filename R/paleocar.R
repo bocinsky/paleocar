@@ -47,7 +47,7 @@ paleocar <- function(chronologies,
                               ...)
     
     readr::write_rds(models,
-                     path = paste0(out.dir,label,".models.Rds"),
+                     file = paste0(out.dir,label,".models.Rds"),
                      compress = "gz")
   }
   
@@ -62,7 +62,7 @@ paleocar <- function(chronologies,
     
     recon <- predict_paleocar_models(models = models)
     readr::write_rds(recon,
-                     path = paste0(out.dir,label,".prediction.Rds"),
+                     file = paste0(out.dir,label,".prediction.Rds"),
                      compress = "gz")
     
   }
