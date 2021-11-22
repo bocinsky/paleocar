@@ -63,6 +63,13 @@ predict_paleocar_models <- function(models,
     dplyr::ungroup() %>%
     dplyr::arrange(cell, year)
   
+  populate_raster <- 
+    function(values, index){
+      out <- raster::raster(models$predictands)
+      out[index] <- values
+      out
+    }
+  
   my_predict <- function(x){
     
     terms <- models$predictor.matrix[, x$model[[1]], drop = F] %>%
@@ -83,11 +90,11 @@ predict_paleocar_models <- function(models,
         dplyr::mutate_at(.vars = dplyr::vars(cell, year), as.integer) %>%
         dplyr::left_join(
           stats::predict(lms,
-                  newdata = 
-                    models$reconstruction.matrix[, x$model[[1]], drop = F] %>% 
-                    as.data.frame() %>%
-                    stats::na.omit(),
-                  interval = "prediction")[, 1:2, drop = FALSE] %>%
+                         newdata = 
+                           models$reconstruction.matrix[, x$model[[1]], drop = F] %>% 
+                           as.data.frame() %>%
+                           stats::na.omit(),
+                         interval = "prediction")[, 1:2, drop = FALSE] %>%
             tibble::as_tibble(rownames = "year") %>%
             dplyr::mutate(year = as.integer(year),
                           pi = fit - lwr) %>%
@@ -162,9 +169,8 @@ predict_paleocar_models <- function(models,
       dplyr::group_by(year) %>%
       dplyr::summarise(dplyr::across(!c(cell), 
                                      ~ list(
-                                       raster::setValues(raster::raster(models$predictands), 
-                                                         values = .x, 
-                                                         index = cell)
+                                       populate_raster(values = .x, 
+                                                       index = cell)
                                      ))) %>%
       dplyr::mutate(dplyr::across(!c(year), ~magrittr::set_names(.x, year))) %>%
       dplyr::summarise(dplyr::across(!c(year), ~list(raster::brick(.x)))) %>%
