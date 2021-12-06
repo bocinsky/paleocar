@@ -29,13 +29,14 @@ paleocar <- function(chronologies,
                      verbose = F,
                      ...){
   t <- Sys.time()
+  out.file <- file.path(out.dir, paste0(label, ".models.Rds"))
   
   if(verbose) cat("\nCalculating all models\n")
-  if(!force.redo & file.exists(paste0(out.dir,label,'.models.Rds'))){
-    models <- readr::read_rds(paste0(out.dir,label,'.models.Rds'))
+  if(!force.redo & file.exists(out.file)){
+    models <- readr::read_rds(out.file)
     
   }else{
-    unlink(paste0(out.dir,label,".models.Rds"), 
+    unlink(out.file, 
            recursive = TRUE, 
            force = TRUE)
     
@@ -47,22 +48,23 @@ paleocar <- function(chronologies,
                               ...)
     
     readr::write_rds(models,
-                     file = paste0(out.dir,label,".models.Rds"),
+                     file = out.file,
                      compress = "gz")
   }
   
   if(verbose) cat("\nGenerating prediction\n")
-  if(!force.redo & file.exists(paste0(out.dir,label,".prediction.Rds"))){
-    recon <- readr::read_rds(paste0(out.dir,label,".prediction.Rds"))
+  out.file <- file.path(out.dir, paste0(label, ".prediction.Rds"))
+  if(!force.redo & file.exists(out.file)){
+    recon <- readr::read_rds(out.file)
     
   }else{
-    unlink(paste0(out.dir,label,".prediction.Rds"), 
+    unlink(out.file, 
            recursive = TRUE, 
            force = TRUE)
     
     recon <- predict_paleocar_models(models = models)
     readr::write_rds(recon,
-                     file = paste0(out.dir,label,".prediction.Rds"),
+                     file = out.file,
                      compress = "gz")
     
   }

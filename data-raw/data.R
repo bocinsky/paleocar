@@ -63,6 +63,7 @@ FedData::pkg_test("parallel")
 source("./data-raw/annualize_prism_monthly.R")
 ## Read the monthly PRISM net precipitation values
 mvnp_prism_ppt_monthly <- raster::brick("./data-raw/mvnp_prism_ppt_monthly.nc4")
+raster::projection(mvnp_prism_ppt_monthly) <- raster::crs("EPSG:4326")
 mvnp_prism <- annualize_prism_monthly(prism.brick = mvnp_prism_ppt_monthly, months = c(-2:9), fun = 'sum')
 mvnp_prism <- mvnp_prism[[paste0("X",calibration.years)]]
 devtools::use_data(mvnp_prism, overwrite = TRUE)

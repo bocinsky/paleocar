@@ -109,7 +109,7 @@ get_bocinsky2016 <- function(template = NULL,
   names(out_bricks) <- c("PPT","GDD")
   
   out_bricks %<>% purrr::map(function(x){
-    raster::projection(x) <- sp::CRS("+proj=longlat +datum=WGS84")
+    raster::projection(x) <- raster::crs("EPSG:4326")
     return(x)
     }) 
   
