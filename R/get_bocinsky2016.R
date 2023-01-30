@@ -50,7 +50,7 @@ get_bocinsky2016 <- function(template = NULL,
   files <- files[grep("nc4",files)] # Only download netcdf files
   
   if(!is.null(template)){
-    template <- sp::spTransform(FedData::polygon_from_extent(template),
+    template <- sp::spTransform(as(FedData::polygon_from_extent(template), "Spatial"),
                                 sp::CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"))
     extent.latlon <- raster::extent(template)
     
