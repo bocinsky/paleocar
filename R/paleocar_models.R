@@ -75,7 +75,7 @@ paleocar_models <- function(chronologies,
   
   maxPreds <- nrow(predictor.matrix) - 5
   
-  if (class(predictands) %in% c("RasterBrick", "RasterStack")) {
+  if (inherits(predictands, c("RasterBrick", "RasterStack"))) {
     if (raster::nlayers(predictands) != length(calibration.years)) {
       stop(
         "Predictand raster must have the same number of layers as the length of the calibration.years vector!"
@@ -344,7 +344,7 @@ paleocar_models <- function(chronologies,
         tibble::as_tibble(rownames = "cell") %>%
         dplyr::mutate(model = this.model)
       
-      if ("mlm" %in% class(model.mlm)) {
+      if (inherits(model.mlm, "mlm")) {
         model.mlm %<>%
           unlist_mlm() %>%
           purrr::map(function(x){attr(x$terms, "term.labels")}) %>%
