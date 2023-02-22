@@ -79,7 +79,7 @@ predict_paleocar_models <- function(models,
     lms <- lm(response ~ .,
               data = terms)
     
-    if(!("mlm" %in% class(lms))){
+    if(!inherits(lms, "mlm")){
       
       x %>%
         dplyr::select(cell, year, endYear) %>%
@@ -163,7 +163,7 @@ predict_paleocar_models <- function(models,
     dplyr::arrange(cell, year)
   
   
-  if (class(models$predictands)[[1]] %in% c("RasterBrick", "RasterStack")) {
+  if (inherits(models$predictands, c("RasterBrick", "RasterStack"))) {
     out %<>% 
       dplyr::arrange(year, cell) %>%
       dplyr::group_by(year) %>%

@@ -11,7 +11,7 @@
 #' @importFrom forecast CV
 CV_mlm <- function (obj) 
 {
-  if(class(obj)[[1]]=="lm"){
+  if(inherits(obj, "lm")){
     return(forecast::CV(obj)[c("CV", "AICc", "AdjR2")] %>%
       as.matrix() %>%
       t() %>%

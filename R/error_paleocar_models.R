@@ -36,7 +36,7 @@ uncertainty_paleocar_models <- function(models,
     errors <- matrix(errors)
   }
   
-  if(class(models$predictands) %in% c("RasterBrick","RasterStack")){
+  if(inherits(predictands, c("RasterBrick", "RasterStack"))){
     na.errors <- matrix(data=NA,
                         nrow=length(prediction.years),
                         ncol=raster::ncell(models$predictands))
