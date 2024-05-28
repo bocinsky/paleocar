@@ -141,7 +141,9 @@ paleocar_models <- function(chronologies,
     carscore_batch(predictand.matrix = predictand.matrix, predictor.matrix =
                      predictor.matrix)
   carscores.ranks <-
-    matrixStats::colRanks(1 - (carscores ^ 2), preserveShape = T)
+    matrixStats::colRanks(1 - (carscores ^ 2), 
+                          preserveShape = T,
+                          ties.method = "max")
   rownames(carscores.ranks) <- rownames(carscores)
   colnames(carscores.ranks) <- colnames(carscores)
   carscores <- carscores.ranks
